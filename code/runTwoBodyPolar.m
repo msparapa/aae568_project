@@ -25,19 +25,19 @@ f     = twobodyPolar(x0,[0 revs*P],dt);
 figure(); polar(f(:,2),f(:,1),'b-'); grid on; hold on;
 
 %% Some abitrary covariance matrix 
-C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10  -2.2077e-14
-     -5.0018e-09   1.0026e-09   7.1661e-09  -7.3595e-14  -5.0066e-17
-     -1.4306e-05   7.1661e-09   8.4438e-07   4.3113e-12   1.4098e-16
-     -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16   8.5570e-21
-     -2.2077e-14  -5.0066e-17   1.4098e-16   8.5570e-21   6.0000e-24];
+% C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10  -2.2077e-14
+%      -5.0018e-09   1.0026e-09   7.1661e-09  -7.3595e-14  -5.0066e-17
+%      -1.4306e-05   7.1661e-09   8.4438e-07   4.3113e-12   1.4098e-16
+%      -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16   8.5570e-21
+%      -2.2077e-14  -5.0066e-17   1.4098e-16   8.5570e-21   6.0000e-24];
 
 % Arbitrary sigmas 
-% rSig    = 1e-04;
-% tSig    = 1e-08;
-% rDotSig = 1e-08;
-% tDotSig = 1e-08;
-% mDotSig = 1e-24;
-% C = [rSig 0 0 0 0;0 tSig 0 0 0;0 0 rDotSig 0 0;0 0 0 tDotSig 0;0 0 0 0 mDotSig];
+rSig    = 1e-04;
+tSig    = 1e-08;
+rDotSig = 1e-08;
+tDotSig = 1e-08;
+mDotSig = 1e-24;
+C = [rSig 0 0 0 0;0 tSig 0 0 0;0 0 rDotSig 0 0;0 0 0 tDotSig 0;0 0 0 0 mDotSig];
 
 %% Setup the Unscented Transform Options
 options = struct; options.alpha = 1; options.beta = 2.0;  
