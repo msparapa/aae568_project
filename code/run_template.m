@@ -14,10 +14,24 @@ a     = Re + h;            % Initial orbit radius, km (need to fix for eccentric
 targ_a = 10000;             % Target orbit radius
 targ_w = sqrt(mu/targ_a^3); % Target orbit mean motion
 
+tof = 7200;                 % Time of flight between observations, sec
+%% Create initial state estimate and stochastic variables
+
+% State x = [r, theta, rdot, thetadot] in {km, rad, km/s, rad/s}
+x0_true = [a; 0; 0; sqrt(mu/a^3)];  % Initial circular orbit
+
+% Covariance
+cov0 = eye(4);
+
+x_est = [];
+
 %% Begin observation/propagation Loop
 complete = false;
 while(~complete)
-    %% Using current state estimate, compute optimal trajectory to reach target
+    %% Using current state est., compute optimal traj. to reach target
+    %
+    %   * Which algorithm to use? Indirect, Mike's
+    %
     
     %% Propagate for one "step" until next observation
     %
