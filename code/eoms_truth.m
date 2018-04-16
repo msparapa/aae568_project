@@ -1,19 +1,22 @@
 function xdot = eoms_truth(t, x, p)
 % EOMS compute the state derivatives for the spacecraft
 %
-%   qdot = eoms(t, x, p) takes the time (t), state (x), and a
+%   xdot = eoms(t, x, p) takes the time (t), state (x), and a
 %   set of parameters (p) as inputs and outputs the time
 %   derivatives of the state variables
 %
 %   x = [r; theta; rdot; thetadot]
 %
-%   p includes the fields
+%   p must include the fields
 %
 %       mu      -   Mass parameter for earth, km^3/s^2
 %       T       -   Thrust magnitude, kg*km/s^2
 %       u_disc  -   Discretized control history (1D, contains the angle,
 %                   alpha)
 %       t_disc  -   Discretized time values associated with u_disc
+%
+%   Author: Andrew Cox
+%   Version: April 16, 2018
 
 % Set size, save easy derivatives
 xdot = zeros(size(x));
