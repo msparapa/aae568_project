@@ -22,7 +22,7 @@ for i = 1:num_iterations
      Z(:,j)          = z.*randn(m1,1);                 
      
      % Forecast Step
-     forecastState   = x_estimate(:,j);                             
+     forecastState   = x_estimate(:,j) + W;                             
      meas            = obs + Z(:,j);                           
      forecastMeas    = h(forecastState)';              
       
