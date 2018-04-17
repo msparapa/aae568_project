@@ -65,11 +65,11 @@ midpoint_derivative_predicted = -3/2*(N-1)*(p0-p1) - 1/4*(dp0+dp1);
 midpoint_derivative_actual = options.odefun(0, midpoint_predicted, params, options.consts);
 
 collo_constraint = midpoint_derivative_predicted - midpoint_derivative_actual;
-c = [c; collo_constraint(:)];
+ceq = [ceq; collo_constraint(:)];
 
 bcs = options.bcfun(0, y(:,1), 1, y(:,end), 0, 0, params, options.consts);
 
-c = [c;bcs'];
+ceq = [ceq;bcs'];
 
 end
 

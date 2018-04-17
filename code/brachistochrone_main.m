@@ -1,5 +1,4 @@
 clc; close all; clear variables;
-% addpath('bvp');
 addpath('optim');
 
 g = 10;
