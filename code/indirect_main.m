@@ -24,8 +24,8 @@ Target.theta0 = 0.21;
 Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
-Cov.R = eye(4)*1e-10;
-Cov.Z = eye(4)*1e-5;
+Cov.R = eye(4)*1e-4;
+Cov.Z = eye(4)*1e-4;
 
 plot_opt.indirect = 1;
 plot_opt.i = 0;
