@@ -24,8 +24,8 @@ Target.theta0 = 0.21;
 Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
-Cov.R = eye(4)*1e-8;
-Cov.Z = eye(4)*1e-6;
+Cov.R = eye(4)*1e-10;
+Cov.Z = eye(4)*1e-5;
 
 plot_opt.indirect = 1;
 plot_opt.i = 0;
@@ -48,6 +48,7 @@ H = eye(4);
 G = eye(4);
 L_k = Nav.P*H'*(H*Nav.P*H'+G*Cov.Z*G')^-1;
 y = H*Actual.X + Cov.Z*randn(4,1);
+Xhat_minus = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
 Xhat_plus = Xhat_minus + L_k*(y - H*Xhat_minus);
 Nav.r_plus = Xhat_plus(1);
 Nav.theta_plus = Xhat_plus(2);

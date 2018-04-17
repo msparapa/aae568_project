@@ -1,4 +1,4 @@
-function dX_dt = prop_EKF_odes(t,X,Chaser,Cov,alpha,alpha_t)
+function dX_dt = prop_actual_odes(t,X,Chaser,Cov,alpha,alpha_t)
 
 r = X(1);
 theta = X(2);
@@ -22,7 +22,7 @@ C = [0, 0, 0, 0;...
                   0, 0, 0, 0;...
                   0, 0, 1, 0;...
                   0, 0, 0, 1];
-dX_dt = dX_dt' + C*randn(4,1)*sqrt(Cov.R(1));
+dX_dt = dX_dt' + C*randn(4,1)*sqrt(Cov.R(1,1));
 
 
 
