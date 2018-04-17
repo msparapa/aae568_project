@@ -24,7 +24,8 @@ Target.theta0 = 0.21;
 Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
-Cov.R = 1e-5;
+Cov.R = eye(4)*1e-8;
+Cov.Z = eye(4)*1e-6;
 
 plot_opt.indirect = 1;
 plot_opt.i = 0;
@@ -40,3 +41,16 @@ lambda0_guess = [lambda10; lambda20; lambda30; lambda40];
 [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target, Nav, t0, plot_opt, lambda0_guess, tf_rel_guess);
 
 Nav = prop_EKF(Nav,Chaser,Cov,alpha,alpha_t,t0,tf);
+
+Actual = prop_actual(Actual,Chaser,Cov,alpha,alpha_t,t0,tf);
+
+H = eye(4);
+G = eye(4);
+L_k = Nav.P*H'*(H*Nav.P*H'+G*Cov.Z*G')^-1;
+y = H*Actual.X + Cov.Z*randn(4,1);
+Xhat_plus = Xhat_minus + L_k*(y - H*Xhat_minus);
+Nav.r_plus = Xhat_plus(1);
+Nav.theta_plus = Xhat_plus(2);
+Nav.rdot_plus = Xhat_plus(3);
+Nav.thetadot_plus = Xhat_plus(4);
+Nav.P_plus = (eye(4)-L_k*H)*Nav.P;
