@@ -1,4 +1,4 @@
-function dX_dtau = indirect_odes(tau, X, tf, Chaser)
+function dX_dtau = indirect_odes(tau, X, tf_rel, Chaser)
 % INDIRECT_ODES Compute the state derivatives for the indirect optimization
 % method
 %
@@ -30,7 +30,7 @@ lambda1 = X(5);
 lambda2 = X(6);
 lambda3 = X(7);
 lambda4 = X(8);
-m = Chaser.m0 - Chaser.mdot*tau*tf;
+m = Chaser.m0 - Chaser.mdot*tau*tf_rel;
 
 cos_gamma = -lambda3*r/sqrt(lambda3^2 * r^2 + lambda4^2);
 sin_gamma = -lambda4/sqrt(lambda3^2 * r^2 + lambda4^2);
@@ -46,5 +46,5 @@ dX_dt(6) = -lambda3*Chaser.T/m*sin_gamma - lambda4*Chaser.T/m/r*(-cos_gamma);
 dX_dt(7) = -lambda1 - lambda4*(-2*thetadot/r);
 dX_dt(8) = -lambda2 - lambda3*r - lambda4*(-2*rdot/r);
 
-dX_dtau = tf*dX_dt;
+dX_dtau = tf_rel*dX_dt;
 return

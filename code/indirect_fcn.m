@@ -43,8 +43,8 @@ solinit = bvpinit(tau, yinit, tf_rel_guess);
 
 bvp_opts = bvpset('Stats','on');
 
-odes = @(tau, X, tf) indirect_odes(tau, X, tf, Chaser);
-bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf, Chaser, Target, Nav, t0);
+odes = @(tau, X, tf) indirect_odes(tau, X, tf_rel, Chaser);
+bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
 sol = bvp4c(odes, bcs, solinit, bvp_opts);
 tf = sol.parameters + t0;
