@@ -6,12 +6,13 @@ function dX_dt = prop_actual_odes(t, X, Chaser, Cov, alpha, alpha_t, w)
 %
 %   Inputs:
 %
-%       - t: propagation time relative to the start of the segment
+%       - t: propagation time relative to mission start (i.e., t = 0)
 %       - X: State vector, X = [r, theta, rdot, thetadot]
 %       - Chaser: Structure containing information about the Chaser s/c
 %       - Cov: Structure containing covariance information
 %       - alpha: optimal control history
-%       - alpha_t: time history associated with the optimal control history
+%       - alpha_t: time history associated with alpha, relative to mission
+%       start
 %       - w: noise that affects the "true" dynamics, also corresponds to
 %       the time values stored in alpha_t
 %
@@ -27,7 +28,7 @@ theta = X(2);
 rdot = X(3);
 thetadot = X(4);
 
-m = Chaser.m0 - Chaser.mdot*t;
+m = 1 - Chaser.mdot*t;
 T = Chaser.T;
 
 alpha_i = interp1(alpha_t, alpha, t);

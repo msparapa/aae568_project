@@ -10,8 +10,9 @@ function Actual = prop_actual(Actual, Chaser, Cov, alpha, alpha_t, t0, tf)
 %       - Cov: Structure containing information about the Covariance
 %       - alpha: Optimal control time-history
 %       - alpha_t: Time associated with alpha
-%       - t0: Epoch of the beginning of the segment
-%       - tf: Final time on the segment
+%       - t0: Epoch of the beginning of the segment, relative to mission
+%       start
+%       - tf: Final time on the segment, relative to mission start
 %
 %   Outputs:
 %
@@ -25,13 +26,14 @@ function Actual = prop_actual(Actual, Chaser, Cov, alpha, alpha_t, t0, tf)
 % Generate a signal to perturb the true dynamics
 w = randn(4,length(alpha_t));
 
-% Definite initial state on true orbit
-X0 = [Actual.r0; Actual.theta0; Actual.rdot0; Actual.thetadot0];
-
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 odes = @(t,X)prop_actual_odes(t, X, Chaser, Cov, alpha, alpha_t, w);
-[~,X] = ode113(odes, [0, tf - t0], X0, options);
+[t,X] = ode113(odes, [t0, tf], Actual.X, options);
 
 % Update the actual state
 Actual.X = X(end,:)';
+Actual.X_history{end+1} = X;
+Actual.t_history{end+1} = t;
+Actual.alpha_history{end+1} = alpha;
+Actual.alpha_t_history{end+1} = alpha_t;
 return

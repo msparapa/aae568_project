@@ -8,7 +8,7 @@ function PSI = indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0)
 %
 %       - Y0: Initial state vector
 %       - Yf: Final state vector
-%       - tf: final time relative to beginning of segment (i.e., tof)
+%       - tf_rel: final time relative to beginning of segment (i.e., tof)
 %       - Chaser: Structure that stores data about the Chaser s/c
 %       - Target: Structure that stores data about the Target s/c
 %       - Nav: Structure that stores data about the current estimated state
@@ -28,10 +28,10 @@ function PSI = indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0)
 
 dYf_dtf = indirect_odes(0,Yf,tf_rel,Chaser)/tf_rel;
 
-PSI = [Y0(1) - Nav.r0;
-    Y0(2) - Nav.theta0;
-    Y0(3) - Nav.rdot0;
-    Y0(4) - Nav.thetadot0;
+PSI = [Y0(1) - Nav.r;
+    Y0(2) - Nav.theta;
+    Y0(3) - Nav.rdot;
+    Y0(4) - Nav.thetadot;
     Yf(1) - Target.r0;
     Yf(2) - Target.thetadot0*(tf_rel+t0) - Target.theta0;
     Yf(3) - Target.rdot0;

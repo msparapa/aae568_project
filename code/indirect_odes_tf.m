@@ -6,8 +6,7 @@ function dX_dt = indirect_odes_tf(t,X,Chaser)
 %
 %   Inputs:
 %
-%       - t: propagation time, relative to the beginning of the segment 
-%           (i.e., tof)
+%       - t: propagation time, relative to mission start (t = 0)
 %       - X: state vector, 
 %           X = [r, theta, rdot, thetadot, lambda1, ..., lambda4]
 %       - tf: time of flight for the segment
@@ -31,7 +30,7 @@ lambda1 = X(5);
 lambda2 = X(6);
 lambda3 = X(7);
 lambda4 = X(8);
-m = 1-Chaser.mdot*t;
+m = 1 - Chaser.mdot*t;
 T = Chaser.T;
 
 cos_gamma = -lambda3*r/sqrt(lambda3^2 * r^2 + lambda4^2);
