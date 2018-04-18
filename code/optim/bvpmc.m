@@ -1,4 +1,6 @@
 function [sol] = bvpmc(odefun, quadsfun, bcfun, solinit, options)
+% Same inputs as bvp4c, but quadsfun = [] for complex (non-reducible)
+% systems
 
 sol = solinit;
 
