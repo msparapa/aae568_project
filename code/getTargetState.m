@@ -12,7 +12,7 @@ function [X] = getTargetState(Target, t)
 r = Target.r0;      % circular orbit, r never changes
 
 % circular orbit: theta changes linearly with time
-theta = Target.theta0 + target.thetadot0*t;
+theta = Target.theta0 + Target.thetadot0*t;
 
 rdot = 0;
 thetadot = Target.thetadot0;

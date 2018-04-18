@@ -31,11 +31,10 @@ thetadot0 = sqrt(muEarth/r0^3);
 
 % Chaser Nondimensional Parameters
 % These will be fed in by main code
-Chaser.T = 0.05; % Non-dim thrust (Value tends to work well)
-Chaser.mdot = 0.001; % Non-dim mdot (Value tends to work well)
-Chaser.m0 = 1; % Non-dim mass; starts at 1; not state variable
-% **** m0 would need to be updated
-Chaser.ts_opt = 1; % Re-optimization non-dim sample time 
+Chaser.T = 0.05;        % Non-dim thrust (Value tends to work well)
+Chaser.mdot = 0.001;    % Non-dim mdot (Value tends to work well)
+Chaser.m0 = 1;          % Non-dim mass; starts at 1; not state variable
+Chaser.ts_opt = 1;      % Non-dim time-of-flight for one "leg" between observations 
 
 % Actual Initial State for Optimizer at t0
 Actual.r0 = 1;
@@ -60,8 +59,8 @@ Target.thetadot0 = sqrt(1/Target.r0^3);
 Cov.R = eye(4)*1e-4; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 Cov.Z = eye(4)*1e-4; % Measurement noise (y = x + z)
 
-t0 = 0; % t0 is the current reoptimization time (not always 0)
-tf_rel_guess = pi; % pi is good guess when t0 = 0, will update as tf-t0
+t_now = 0;          % t_now is the current reoptimization time (not always 0)
+tf_rel_guess = pi;  % pi is good guess when t_now = 0, will update as tf-t_now
 
 % helpful IC, replaced by lambda_f when re-optimizing
 lambda10 = 22; 
@@ -72,29 +71,45 @@ lambda0_guess = [lambda10; lambda20; lambda30; lambda40];
 
 % Begin Mission Loop
 gameover = false;
+count = 0;
 while(~gameover)
     %% Using current state est., compute optimal traj. to reach target
+    %   
+    %   Optimization method should spit out the FULL optimal control
+    %   from the current state to the final rendezvous
+    %
+    %   We won't necessarily use the entire optimal solution, just a
+    %   section of it that corresponds to our flight time between
+    %   observations
     switch(lower(sim_opt.optim))
         case 'indirect'
             % Indirect Optimization - Collin
-            % Outputs: alpha(t), sample t's for alpha, 
-            %   absolute tf (tf_rel + t0), lambdas at next re-optimization
-            %   time
+            % Outputs: 
+            %   - alpha: full optimal ctrl sequence
+            %   - alpha_t: Nondim time associated with alpha 
+            %   - tf: absolute time past mission start (tf_rel + t0) 
+            %   - lambda_f: lambdas at the end of the flight segment
+            if(count > 0)
+                lambda0_guess = lambda_f;   % Update
+                t_now = tf;                 % Update starting time
+                tf_rel_guess = tf_rel_guess + tf;   % Update TOF guess
+            end
             [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
-                Nav, t0, plot_opt, lambda0_guess, tf_rel_guess);
+                Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
+            
     end
     
     
     %% Propagate for one "step" until next observation
     
     % Propagate the true state with interpolated process noise
-    Actual = prop_actual(Actual, Chaser, Cov, alpha, alpha_t, t0, tf);
+    Actual = prop_actual(Actual, Chaser, Cov, alpha, alpha_t, t_now, tf);
     
     switch(lower(sim_opt.estim))
         case 'ekf'
             % EKF function to propagate State covariance in P in continuous
             % time with acceleration process covariance
-            Nav = prop_EKF(Nav, Chaser, Cov, alpha, alpha_t, t0, tf);
+            Nav = prop_EKF(Nav, Chaser, Cov, alpha, alpha_t, t_now, tf);
     end
     
     %% Make Observation
@@ -124,14 +139,15 @@ while(~gameover)
     %% Evaluate status
     %   Has spacecraft reached the target?
     
-    X_targ = getTargetState(Target, t);
+    X_targ = getTargetState(Target, tf);
     X_chaser = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
     state_err = norm(X_targ - X_chaser);
     gameover = state_err < sim_opt.stateTol;
     
     if(~gameover)
         % Update Chaser state
-        Chaser.m = Chaser.m - Chaser.mdot*t_ellapsed;
+        Chaser.m0 = Chaser.m0 - Chaser.mdot*(tf - t_now);
     end
     
+    count = count + 1;
 end

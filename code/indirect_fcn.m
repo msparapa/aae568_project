@@ -6,17 +6,22 @@
 % State and Cosstate Equations: phase_odes.m
 % BCs: phase_bc.m
 %
-function [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser,Target,Nav,...
-    t0,plot_opt,lambda0_guess,tf_rel_guess)
+function [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
+    Nav, t0, plot_opt, lambda0_guess, tf_rel_guess)
 
 
 yinit = [Nav.r0; Nav.theta0; Nav.rdot0; Nav.thetadot0; lambda0_guess];
 Nt = 500;
-tau = linspace(0,1,Nt)'; % non-dimensional time vector
+tau = linspace(0, 1, Nt)'; % non-dimensional time vector
+
 solinit = bvpinit(tau,yinit,tf_rel_guess);
+
 bvp_opts = bvpset('Stats','on');
-sol = bvp4c(@(tau,X,tf)indirect_odes(tau,X,tf,Chaser),...
-    @(Y0,Yf,tf)indirect_bcs(Y0,Yf,tf,Chaser,Target,Nav,t0), solinit, bvp_opts);
+
+odes = @(tau, X, tf) indirect_odes(tau, X, tf, Chaser);
+bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf, Chaser, Target, Nav, t0);
+
+sol = bvp4c(odes, bcs, solinit, bvp_opts);
 tf = sol.parameters+t0;
 X0 = sol.y(:,1);
 
@@ -32,7 +37,7 @@ for i = 1:length(alpha_t)
         break
     end
 end
-lambda_f = X(i_ts_opt,5:8);
+lambda_f = X(i_ts_opt,5:8).';
 
 if plot_opt.indirect
     plot_opt.i = plot_opt.i + 1;
