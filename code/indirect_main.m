@@ -38,7 +38,8 @@ lambda30 = 20;
 lambda40 = -5;
 lambda0_guess = [lambda10; lambda20; lambda30; lambda40];
 
-[alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target, Nav, t0, plot_opt, lambda0_guess, tf_rel_guess);
+[alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target, Nav, t0,...
+    plot_opt, lambda0_guess, tf_rel_guess);
 
 Nav = prop_EKF(Nav,Chaser,Cov,alpha,alpha_t,t0,tf);
 
