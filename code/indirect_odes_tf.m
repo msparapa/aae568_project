@@ -1,4 +1,4 @@
-function dX_dt = indirect_odes(t,X,Chaser)
+function dX_dt = indirect_odes_tf(t,X,Chaser)
 %
 % Collin York
 % AAE 508

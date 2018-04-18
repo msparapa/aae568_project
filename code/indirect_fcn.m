@@ -1,20 +1,43 @@
-% Collin York
-% AAE 508
-% Final Project
-% Minimum Time for Circular Orbit Phase Change
-%
-% State and Cosstate Equations: phase_odes.m
-% BCs: phase_bc.m
-%
 function [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
     Nav, t0, plot_opt, lambda0_guess, tf_rel_guess)
-
+% INDIRECT_FCN Solve the indirect optimization problem
+%
+%   [...] = indirect_fcn(Chaser, Target, Nav, t0, plot_opt, lambda0_guess,
+%                       tf_rel_guess)
+%
+%       Solves the indirect optimization problem of guiding the Chaser
+%       spacecraft to rendezvous with the Target spacecraft.
+%
+%       Although the entire optimal trajectory is computed, the problem is
+%       structured to only fly part of the trajectory before obtaining a
+%       new observation, updating the navigation estimate, and recomputing
+%       the optimal trajectory.
+%
+%   Inputs:
+%
+%       - Chaser: Structure containing information about the Chaser s/c
+%       - Target: Structure containing information about the Target s/c
+%       - Nav: Structure containing information about the current Nav state
+%       - t0: Initial epoch associated with the current segment
+%       - plot_opt: Options for plotting
+%       - lambda0_guess: Initial conditions for the costates
+%       - tf_rel_guess: Guess for propagation time to reach final state
+%
+%   Outputs: [alpha, alpha_t, tf, lambda_f]
+%
+%       - alpha: Control history for the entire optimal trajectory
+%       - alpha_t: times associated with alpha
+%       - tf: total time on the optimal trajectory
+%       - lambda_f: costate values at the end of "the segment", i.e., 
+%
+%   Author: Collin York
+%   Version: April 18, 2018
 
 yinit = [Nav.r0; Nav.theta0; Nav.rdot0; Nav.thetadot0; lambda0_guess];
 Nt = 500;
 tau = linspace(0, 1, Nt)'; % non-dimensional time vector
 
-solinit = bvpinit(tau,yinit,tf_rel_guess);
+solinit = bvpinit(tau, yinit, tf_rel_guess);
 
 bvp_opts = bvpset('Stats','on');
 
@@ -25,8 +48,9 @@ sol = bvp4c(odes, bcs, solinit, bvp_opts);
 tf = sol.parameters+t0;
 X0 = sol.y(:,1);
 
-options = odeset('RelTol',1e-12,'AbsTol',1e-12);
-[alpha_t,X] = ode113(@(t,X)indirect_odes_tf(t,X,Chaser),[t0 tf],X0,options);
+options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
+odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
+[alpha_t,X] = ode113(odes_tf, [t0 tf], X0, options);
 
 [r, theta, x, y, alpha, gamma, alpha_hor, i_quiv] = unpack_X(X);
 

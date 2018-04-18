@@ -63,11 +63,7 @@ t_now = 0;          % t_now is the current reoptimization time (not always 0)
 tf_rel_guess = pi;  % pi is good guess when t_now = 0, will update as tf-t_now
 
 % helpful IC, replaced by lambda_f when re-optimizing
-lambda10 = 22; 
-lambda20 = -7;
-lambda30 = 20;
-lambda40 = -5;
-lambda0_guess = [lambda10; lambda20; lambda30; lambda40];
+lambda0_guess = [22; -7; 20; -5];
 
 % Begin Mission Loop
 gameover = false;
@@ -90,9 +86,9 @@ while(~gameover)
             %   - tf: absolute time past mission start (tf_rel + t0) 
             %   - lambda_f: lambdas at the end of the flight segment
             if(count > 0)
-                lambda0_guess = lambda_f;   % Update
-                t_now = tf;                 % Update starting time
-                tf_rel_guess = tf_rel_guess + tf;   % Update TOF guess
+                lambda0_guess = lambda_f;           % Update
+                t_now = t_now + Chaser.ts_opt;      % Update starting time
+                tf_rel_guess = tf - t_now ;         % Update TOF guess
             end
             [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
                 Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);

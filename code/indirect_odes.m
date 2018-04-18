@@ -1,4 +1,21 @@
-function dX_dtau = phase_odes(tau,X,tf,Chaser)
+function dX_dtau = indirect_odes(tau, X, tf, Chaser)
+% INDIRECT_ODES Compute the state derivatives for the indirect optimization
+% method
+%
+%   dX_dtau = indirect_odes(tau, X, tf, Chaser) 
+%
+%   Inputs:
+%
+%       - tau: nondimensional propagation time, relative to the beginning
+%       of the segment (i.e., tof)
+%       - X: state vector, 
+%           X = [r, theta, rdot, thetadot, lambda1, ..., lambda4]
+%       - tf: time of flight for the segment
+%       - Chaser: structure that stores information about the Chaser s/c
+%
+%   Outputs:
+%
+%       - dX_dtau: derivative of the state vector w.r.t. tau
 %
 % Collin York
 % AAE 508
@@ -17,6 +34,8 @@ m = Chaser.m0 - Chaser.mdot*tau*tf;
 
 cos_gamma = -lambda3*r/sqrt(lambda3^2 * r^2 + lambda4^2);
 sin_gamma = -lambda4/sqrt(lambda3^2 * r^2 + lambda4^2);
+
+dX_dt = zeros(size(X));
 
 dX_dt(1) = X(3);
 dX_dt(2) = X(4);

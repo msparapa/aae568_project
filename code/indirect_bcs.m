@@ -1,4 +1,24 @@
-function PSI = indirect_bcs(Y0,Yf,tf,Chaser,Target,Nav,t0)
+function PSI = indirect_bcs(Y0, Yf, tf, Chaser, Target, Nav, t0)
+% INDIRECT_BCS Compute the boundary conditions for the indirect
+% optimization method
+%
+%   psi = indirect_bcs(Y0, Yf, tf, Chaser, Target, Nav, t0)
+%
+%   Inputs:
+%
+%       - Y0: Initial state vector
+%       - Yf: Final state vector
+%       - tf: final time relative to beginning of segment (i.e., tof)
+%       - Chaser: Structure that stores data about the Chaser s/c
+%       - Target: Structure that stores data about the Target s/c
+%       - Nav: Structure that stores data about the current estimated state
+%       of the Chaser s/c
+%       - t0: Epoch of the beginning of the segment
+%
+%   Outputs:
+%
+%       - psi: column vector of boundary conditions; each entry should 
+%       evaluate to zero when satisfied
 %
 % Collin York
 % AAE 508
