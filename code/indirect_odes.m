@@ -46,5 +46,5 @@ dX_dt(6) = -lambda3*Chaser.T/m*sin_gamma - lambda4*Chaser.T/m/r*(-cos_gamma);
 dX_dt(7) = -lambda1 - lambda4*(-2*thetadot/r);
 dX_dt(8) = -lambda2 - lambda3*r - lambda4*(-2*rdot/r);
 
-dX_dtau = tf*dX_dt';
+dX_dtau = tf*dX_dt;
 return

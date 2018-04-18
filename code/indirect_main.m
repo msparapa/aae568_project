@@ -81,17 +81,19 @@ while(~gameover)
         case 'indirect'
             % Indirect Optimization - Collin
             % Outputs: 
-            %   - alpha: full optimal ctrl sequence
-            %   - alpha_t: Nondim time associated with alpha 
-            %   - tf: absolute time past mission start (tf_rel + t0) 
-            %   - lambda_f: lambdas at the end of the flight segment
+            % - alpha: Control history for the entire optimal trajectory
+            % - alpha_t: times associated with alpha
+            % - tf: total time on the optimal trajectory
+            % - t_seg: time at the end of "the segment"
+            % - lambda_seg: costate values at the end of "the segment", 
+            %   i.e., part way through the optimal trajectory.
             if(count > 0)
-                lambda0_guess = lambda_f;           % Update
-                t_now = t_now + Chaser.ts_opt;      % Update starting time
+                lambda0_guess = lambda_seg;          % Update
+                t_now = t_now + t_seg;      % Update starting time
                 tf_rel_guess = tf - t_now ;         % Update TOF guess
             end
-            [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
-                Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
+            [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser,...
+                Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
             
     end
     

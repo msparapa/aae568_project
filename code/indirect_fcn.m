@@ -1,4 +1,4 @@
-function [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
+function [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser, Target,...
     Nav, t0, plot_opt, lambda0_guess, tf_rel_guess)
 % INDIRECT_FCN Solve the indirect optimization problem
 %
@@ -28,7 +28,9 @@ function [alpha, alpha_t, tf, lambda_f] = indirect_fcn(Chaser, Target,...
 %       - alpha: Control history for the entire optimal trajectory
 %       - alpha_t: times associated with alpha
 %       - tf: total time on the optimal trajectory
-%       - lambda_f: costate values at the end of "the segment", i.e., 
+%       - t_seg: time at the end of "the segment"
+%       - lambda_seg: costate values at the end of "the segment", i.e., 
+%       part way through the optimal trajectory.
 %
 %   Author: Collin York
 %   Version: April 18, 2018
@@ -45,23 +47,18 @@ odes = @(tau, X, tf) indirect_odes(tau, X, tf, Chaser);
 bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf, Chaser, Target, Nav, t0);
 
 sol = bvp4c(odes, bcs, solinit, bvp_opts);
-tf = sol.parameters+t0;
+tf = sol.parameters + t0;
 X0 = sol.y(:,1);
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
-[alpha_t,X] = ode113(odes_tf, [t0 tf], X0, options);
+[alpha_t,X] = ode113(odes_tf, tau*tf, X0, options);
 
 [r, theta, x, y, alpha, gamma, alpha_hor, i_quiv] = unpack_X(X);
 
-for i = 1:length(alpha_t)
-    if alpha_t(i) < Chaser.ts_opt
-        i_ts_opt = i;
-    else
-        break
-    end
-end
-lambda_f = X(i_ts_opt,5:8).';
+i_ts_opt = find(alpha_t < Chaser.ts_opt, 1, 'last');
+t_seg = alpha_t(i_ts_opt);
+lambda_seg = X(i_ts_opt, 5:8).';
 
 if plot_opt.indirect
     plot_opt.i = plot_opt.i + 1;
