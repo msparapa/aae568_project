@@ -30,7 +30,7 @@ X0 = [Actual.r0; Actual.theta0; Actual.rdot0; Actual.thetadot0];
 
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 odes = @(t,X)prop_actual_odes(t, X, Chaser, Cov, alpha, alpha_t, w);
-[~,X] = ode113(odes, [t0 tf], X0, options);
+[~,X] = ode113(odes, [0, tf - t0], X0, options);
 
 % Update the actual state
 Actual.X = X(end,:)';
