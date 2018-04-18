@@ -31,7 +31,7 @@ lambda1 = X(5);
 lambda2 = X(6);
 lambda3 = X(7);
 lambda4 = X(8);
-m = Chaser.m0-Chaser.mdot*(t-t0);
+m = 1-Chaser.mdot*t;
 T = Chaser.T;
 
 cos_gamma = -lambda3*r/sqrt(lambda3^2 * r^2 + lambda4^2);
