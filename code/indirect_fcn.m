@@ -36,19 +36,23 @@ function [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser
 %   Version: April 18, 2018
 
 yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot; lambda0_guess];
-Nt = 500;
-tau = linspace(0, 1, Nt)'; % non-dimensional time vector
+%Nt = 500;
+%tau = linspace(0, 1, Nt)'; % non-dimensional time vector
+%solinit = bvpinit(tau, yinit, tf_rel_guess);
+%bvp_opts = bvpset('Stats','on');
+%odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
+%bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
-solinit = bvpinit(tau, yinit, tf_rel_guess);
+ICsolver0 = [yinit; tf_rel_guess];
+options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'Display','none');
+[ICs, FVAL] = fsolve(@(X)indirect_fsolver(X,Chaser,Target,Nav,t0), ICsolver0, options);
+fprintf('\nfsolve |F| = %f\n',norm(FVAL));
+% sol = bvp4c(odes, bcs, solinit, bvp_opts);
+% tf = sol.parameters + t0;   % Time at end of arc, relative to mission start
+% X0 = sol.y(:,1);
 
-bvp_opts = bvpset('Stats','on');
-
-odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
-bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
-
-sol = bvp4c(odes, bcs, solinit, bvp_opts);
-tf = sol.parameters + t0;   % Time at end of arc, relative to mission start
-X0 = sol.y(:,1);
+X0 = ICs(1:8);
+tf = ICs(9) + t0;
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
