@@ -1,10 +1,10 @@
-function f = twobodyPolar(f0,tspan,dt)
-%...Pass the initial conditions and time interval to ode45,
+function X = twobodyPolar(X0, tspan, dt, Chaser, Cov, alpha, alpha_t)
+%...Pass the initial conditions and time interval to ode113,
 %...which calculates the position and velocity at discrete
-%...times t, returning the solution in the column vector f.
-%...ode45 uses the m-function 'accel_polar' to evaluate the
+%...times t, returning the solution in the column vector X.
+%...ode113 uses the m-function 'prop_UT_odes' to evaluate the
 %...acceleration at each integration time step.
 tol = 1e-10;
 options = odeset('RelTol',tol,'AbsTol',tol);
-[~,p] = ode45('prop_UT_odes', [tspan(1):dt:tspan(2)], f0,options);
-f = p(:,:); 
+odes = @(t, X) prop_UT_odes(t, X, Chaser, Cov, alpha, alpha_t);
+[~,X] = ode113(odes, tspan(1):dt:tspan(2), X0, options);

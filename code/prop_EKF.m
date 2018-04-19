@@ -27,7 +27,7 @@ end
 
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 odes = @(t,X)prop_EKF_odes(t,X,Chaser,Cov,alpha,alpha_t);
-[t,X] = ode45(odes, [t0 tf], X0, options);
+[t,X] = ode113(odes, [t0 tf], X0, options);
 
 Nav.X_history{end+1} = X;
 Nav.t_history{end+1} = t;

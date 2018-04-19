@@ -9,9 +9,21 @@ plot_opt.i = 0;             % last plot figure number
 plot_opt.actual = true;
 
 % Options for simulation
-sim_opt.optim = 'indirect';     % which optimization method to use
-sim_opt.estim = 'ekf';          % which estimate method to use
-sim_opt.stateTol = 1e-6;        % tolerance to check if state has reached final value
+
+% Which optimization method to use
+%
+%   - indirect
+%   - colloc (TODO)
+sim_opt.optim = 'indirect';
+
+% Which estimation method to use
+%
+%   - ekf   Extended Kalman Filter
+%   - ut    Unscented Transform
+sim_opt.estim = 'ut';
+
+% Tolerance to check if state has reached final value
+sim_opt.stateTol = 1e-6;
 
 %% Define Dimensional Initial Conditions
 charL = 6378 + 200;     % characteristic length, km; TODO - DEFINE THIS
@@ -60,9 +72,22 @@ Target.theta0 = 0.21;
 Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
-% Noise Covariance
+
 Cov.R = eye(4)*1e-4; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-Cov.Z = eye(4)*1e-4; % Measurement noise (y = x + z)
+
+switch(sim_opt.estim)
+    case 'ekf'
+        % Noise Covariance
+        Cov.Z = eye(4)*1e-4; % Measurement noise (y = x + z)
+    case 'ut'
+        % Some arbitrary covariance matrix
+        P0 = rand(4);
+        P0 = P0*P0.' * 1e-9;        % Use small values to avoid larger errors that crash the Chaser into Earth
+        Cov.P0 = P0;
+        Cov.alpha = 1;
+        Cov.beta = 2.0;
+        Cov.dt = 0.05;    % Propagate step-size (nondimensional time)
+end
 
 t_now = 0;          % t_now is the current reoptimization time (not always 0)
 tf_rel_guess = pi;  % pi is good guess when t_now = 0, will update as tf-t_now
@@ -151,9 +176,25 @@ while(~gameover)
             % EKF function to propagate State covariance in P in continuous
             % time with acceleration process covariance
             Nav = prop_EKF(Nav, Chaser, Cov, alpha, alpha_t, t_now, t_seg);
+        case 'ut'
+            % Construct state for UT
+            s0 = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
+            
+            % Run unscented transform
+            [intMeans, intCovars, statesOut, Wm, Wc] = prop_UT(s0, Cov,...
+                Chaser, alpha, alpha_t, t_now, t_seg);
+            
+            Nav.X_history{end+1} = intMeans;
+            Nav.t_history{end+1} = t_now:Cov.dt:t_seg;
+            
+            % Store propagated Sigmas
+            storeCov = zeros(length(intCovars),4);
+            for i = 1:length(intCovars)
+                storeCov(i,:) = sqrt(diag(intCovars(1:4,1:4,i)));
+            end
     end
     
-    %% Make Observation
+    %% Make observation and update estimate
     %   
     %   * Update state estimate
     %   * Update covariance
@@ -175,6 +216,24 @@ while(~gameover)
             Nav.rdot = nav_post(3);
             Nav.thetadot = nav_post(4);
             Nav.P = (eye(4) - L_k*H)*Nav.P;     % covariance update
+        case 'ut'
+            % Update propagated particles using a UKF
+            truObs = [Actual.X(1); Actual.X(3)];
+            z = [1e-4; 3e-6];                          % Measurement Noise
+            h = @(j) updatePolarMeasurement(j);                                                                              
+            x_initial = statesOut(:,:,end);         % Sigma Points                   
+            w = 0;                                  % Process Noise Standard Deviation                              
+            obs = [truObs(1,1); truObs(2,1)];       % Single [r,rhoDot] Measurement                     
+            num_iterations = 1;
+            [x_update, postUpdateCov] = ukf(h,x_initial,w,z,obs,num_iterations,Wm,Wc);
+            
+            % Update nav state
+            x_update = mean(x_update, 2);
+            Nav.r = x_update(1);
+            Nav.theta = x_update(2);
+            Nav.rdot = x_update(3);
+            Nav.thetadot = x_update(4);
+            Nav.P = postUpdateCov;
     end
     
     if(plot_opt.actual)

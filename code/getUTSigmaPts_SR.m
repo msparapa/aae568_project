@@ -42,10 +42,10 @@ function [Chi,Wm,Wc] = getUTSigmaPts_SR( mean, cholCovar, options )
 
 nDims = length(mean);
 
-lambda = options.alpha*options.alpha*3-nDims;
-Wm0    = lambda/(nDims+lambda);
+lambda = options.alpha*options.alpha*3 - nDims;
+Wm0    = lambda/(nDims + lambda);
 Wc0    = Wm0 + (1 - options.alpha*options.alpha + options.beta);
-WmI    = ones(2*nDims,1)./(2*(nDims+lambda));
+WmI    = ones(2*nDims,1)./(2*(nDims + lambda));
 Wm     = [Wm0; WmI];
 Wc     = [Wc0; WmI];
 

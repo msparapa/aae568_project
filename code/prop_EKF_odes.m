@@ -1,4 +1,4 @@
-function dX_dt = prop_EKF_odes(t,X,Chaser,Cov,alpha,alpha_t)
+function dX_dt = prop_EKF_odes(t, X, Chaser, Cov, alpha, alpha_t)
 % PROP_EKF_ODES Propagate dynamics and covaraince for the EKF
 %
 %   dX_dt = prop_EKF_odes(t, X, Chaser, Cov, alpha, alpha_t)

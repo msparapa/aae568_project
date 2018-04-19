@@ -1,6 +1,7 @@
-function [intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, P0, options, varargin, t, dt)
+function [intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, Cov,...
+    Chaser, alpha, alpha_t, t_now, t_seg)
 %
-% [outMean,outCovar] = prop_UT( mean, covar, fcn, options, varargin )
+% [outMean,outCovar] = prop_UT( s0, Cov, Chaser, alpha, alpha_t, t_now, t_seg )
 % ---------------------------------------------------------------------
 %
 % Description:
@@ -11,19 +12,24 @@ function [intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, P0, options, vararg
 %
 % Inputs:
 %
-%  mean    - nx1 vector for the mean of the input Gaussian
-%  covar   - nxn matrix for the covariance information for the input
-%               Gaussian
-%  fcn     - Black-box function to use to map the sigma points to the
-%               output domain
-%  options - structure containing the options for the execuation of the UT.
-%               options.utsquareroot - (optional) If 1, then assume the
+%  s0       - nx1 vector for the mean of the input Gaussian
+%  Cov      - Structure containing covariance information and options for
+%             the unscented transform
+%               Cov.P0           - nxn covariance matrix
+%               Cov.dt           - step size for integration
+%               Cov.utsquareroot - (optional) If 1, then assume the
 %                                           input covariance is the
 %                                           Cholesky decomposition and use
 %                                           the square-root UT
-%               options.alpha        - double, alpha parameter for the UT
-%               options.beta         - double, beta parameter for the UT
-%  varargin - Other arguments passed to the input fcn
+%               Cov.alpha        - double, alpha parameter for the UT
+%               Cov.beta         - double, beta parameter for the UT
+%  Chaser   - Structure containing information about the Chaser s/c
+%  alpha    - Vector of control inputs for the segment
+%  alpha_t  - Times associated with alpha, relative to mission start
+%  t_now    - Epoch of the beginning of the propagation, relative to
+%             mission start
+%  t_seg    - Epoch of the end of the propagation, relative to mission
+%             start
 %
 % Outputs:
 %
@@ -46,6 +52,7 @@ function [intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, P0, options, vararg
 % Dependencies:
 %
 %   getUTSigmaPts_SR()
+%   twobodyPolar()
 %
 % Modification History:
 %
@@ -56,32 +63,34 @@ function [intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, P0, options, vararg
 
 %  Determine if we were provided the square root of the covariance or the
 %  full matrix
-if isfield( options, 'utsquareroot' )
-    useSquareRoot = options.utsquareroot;
+if isfield( Cov, 'utsquareroot' )
+    useSquareRoot = Cov.utsquareroot;
 else
     useSquareRoot = 0;
 end
 
 %  If we were provided the full covariance, get its Cholesky decomposition.
 if useSquareRoot == 1
-    cholCov = P0;
+    cholCov = Cov.P0;
 else
-    cholCov = chol( P0, 'lower' );
+    cholCov = chol( Cov.P0, 'lower' );
 end
 
 %  Get the sigma points
-[Chi,Wm,Wc] = getUTSigmaPts_SR( s0, cholCov, options );
+[Chi,Wm,Wc] = getUTSigmaPts_SR( s0, cholCov, Cov );
 
 %  Map the sigma points through the input funcion
-statesOut = zeros(size(Chi,1),size(Chi,2),t/dt+1);
+statesOut = zeros(size(Chi,1),size(Chi,2), floor((t_seg - t_now)/Cov.dt) + 1);
 for i = 1:size(Chi,2)
-    f = twobodyPolar(Chi(:,i),[0 t],dt);
-    statesOut(:,i,:) = transpose(f);
+    f = twobodyPolar(Chi(:,i), [t_now, t_seg], Cov.dt, Chaser,...
+        Cov, alpha, alpha_t);
+    statesOut(:,i,:) = f.';
 end
 
-n = t/dt+1;
-intMeans = zeros(n,5);
-intCovars = zeros(5,5,n);
+n = size(statesOut, 3);
+% n = floor(range(alpha_t)/Cov.dt) + 1;
+intMeans = zeros(n, length(s0));
+intCovars = zeros(length(s0), length(s0), n);
 for h = 1:n
     
     stateOut = statesOut(:,:,h);
