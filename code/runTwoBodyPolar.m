@@ -14,7 +14,7 @@ P     = 2*pi*sqrt(a^3/mu); % orbit period, s
 w     = 2*pi/P;            % orbit angular velocity, rad/s
 dt    = 60;                % propagation step-size
 revs  = 4;                 % revs to propagate
-N     = 10;                % number of measurements 
+N     = 100;                % number of measurements 
 
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
@@ -39,7 +39,7 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10  -2.2077e-14
      -2.2077e-14  -5.0066e-17   1.4098e-16   8.5570e-21   6.0000e-24];
 
 % Scale the Covariance up 
-sf = 5;
+sf = 1000;
 sfMatrix = [
         sf   0     0     0    0;
          0   sf    0     0    0;
@@ -47,7 +47,9 @@ sfMatrix = [
          0    0    0    sf    0;
          0    0    0     0   sf];
 C = sfMatrix*C*transpose(sfMatrix);
-     
+
+% Draw a random sample from the scaled covariance and set this to your
+% initial seed
 nSamples  = 1;
 s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(5,nSamples);
  
@@ -78,7 +80,7 @@ end
     estMeans                  = zeros(N,5);                     % preallocate storage for estimated means
     estCovars                 = zeros(5,5,N);                   % preallocate storage for estiamte covariances
 for k = 1:N
-    truObs                    = meas(N,:)';                     % extract observation at Nth step 
+    truObs                    = meas(k,:)';                     % extract observation at Nth step 
     z                         = [1;1e-3];                       % measurement noise (a noisier measurement is less trustworthy)
     h                         = @(j) updatePolarMeasurement(j);
     w                         = 0;                              % process noise standard deviation
@@ -169,4 +171,28 @@ ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('Trajectory');
+set(gca,'gridlinestyle','--')
+
+% Residuals 
+PredTraj = [utMeans; utMeansNew]; % Predicted Trajectory
+Diff = PredTraj - fTot;
+
+figure();
+subplot(4,1,1)
+set(0,'DefaultAxesFontName', 'Arial'); 
+plot([0 t3/3600],Diff(:,1)*1e3, 'r-'); grid on
+ylabel('$\Delta r$, m','Interpreter','latex')
+subplot(4,1,2)
+plot([0 t3/3600],Diff(:,3)*1e3, 'r-'); grid on
+ylabel('$\Delta\dot{r}$, m/sec','Interpreter','latex')
+subplot(4,1,3)
+set(0,'DefaultAxesFontName', 'Arial'); 
+plot([0 t3/3600],Diff(:,2)*180/pi, 'r-'); grid on
+ylabel('$\Delta\theta$, deg','Interpreter','latex')
+subplot(4,1,4)
+plot([0 t3/3600],Diff(:,4)*180/pi, 'r-'); grid on
+ylabel('$\dot{\Delta\theta}$, deg/sec','Interpreter','latex')
+xlabel('\fontname{Times New Roman} Length of Propagation, hr');
+subplot(4,1,1)
+title('Trajectory Error');
 set(gca,'gridlinestyle','--')
