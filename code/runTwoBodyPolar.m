@@ -24,6 +24,7 @@ x0    = [a;0;0;w;mdot];    % initial state
 s0    = [x0(1:4)+q*...     % initial state with noise
          randn(4,1);x0(5)];    
 f     = twobodyPolar(x0,[0 revs*P],dt);
+fTot  = twobodyPolar(x0,[0 2*revs*P+dt],dt);
 meas  = twobodyPolar(f(end,:)',[0 N*dt],dt);
 meas  = [meas(1:N,1),meas(1:N,3)];
 
@@ -70,8 +71,8 @@ for k = 1:N
     w                         = 0;                              % process noise standard deviation
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
     num_iterations            = 1;
-%     [x_update,postUpdateCov]= ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
-    [x_update,postUpdateCov]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
+    [x_update,postUpdateCov]= ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
+%     [x_update,postUpdateCov]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
     [meanOut,covarOut,sigmaPointsOut,~,~] = prop_UT( mean(x_update,2), postUpdateCov, options, 9, dt,dt/dt);  % Propagate measurement update to next time step
     ukfMean                   = meanOut(end,:)';
     ukfCovar                  = covarOut(:,:,end);
@@ -98,8 +99,9 @@ for i = n+1:n+l
     ind = ind + 1;
 end
 
-t = linspace(dt,revs*P,revs*P/dt);
+t  = linspace(dt,revs*P,revs*P/dt);
 t2 = linspace(revs*P,revs*P*2,revs*P/dt);
+t3 = linspace(0,revs*P*2+dt,dt);
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
@@ -145,7 +147,8 @@ ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],utMeans(:,4)*180/pi,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,4)*180/pi,'b-'); hold on;
-plot([0 t/3600],f(:,4)*180/pi,'r-')
+plot([0 t/3600],f(:,4)*180/pi,'r-'); hold on;
+plot([0 t3/3600],fTot(:,4)*180/pi, 'g--');
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)

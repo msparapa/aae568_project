@@ -43,7 +43,7 @@ for i = 1:num_iterations
    end
    
    Pxy            = Ex*diag(Wc)*Ey';                  % Cross-correlation
-   Pyy            = Ey*diag(Wc)*Ey'+ Zcov;            % Innovation
+   Pyy            = Ey*diag(Wc)*Ey' + Zcov;           % Innovation
    K              = Pxy/Pyy;                          % Kalman Gain
    x_update       = x_estimate + K*(y - y_forecast);  % State Update
    P_update       = P_initial - K*Pxy';               % Covariance Update
