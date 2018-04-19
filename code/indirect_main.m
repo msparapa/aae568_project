@@ -156,7 +156,7 @@ while(~gameover)
             %   i.e., part way through the optimal trajectory.
             if(count > 0)
                 lambda0_guess = lambda_seg;         % Update
-                t_now = t_now + t_seg;              % Update starting time
+                t_now = t_seg;                      % Update starting time
                 tf_rel_guess = tf - t_now ;         % Update TOF guess
             end
             [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser,...
@@ -186,7 +186,7 @@ while(~gameover)
                 Chaser, alpha, alpha_t, t_now, t_seg);
             
             Nav.X_history{end+1} = intMeans;
-            Nav.t_history{end+1} = t_now:Cov.dt:t_seg;
+            Nav.t_history{end+1} = [t_now:Cov.dt:t_seg, t_seg];
             
             % Store propagated Sigmas
             storeCov = zeros(length(intCovars),4);
@@ -282,14 +282,14 @@ while(~gameover)
     %% Evaluate status
     %   Has spacecraft reached the target?
     
-    X_targ = getTargetState(Target, tf);
+    X_targ = getTargetState(Target, t_seg);
     X_chaser = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
     state_err = norm(X_targ - X_chaser);
     gameover = state_err < sim_opt.stateTol;
     
     if(~gameover)
         % Update Chaser state
-        Chaser.m0 = Chaser.m0 - Chaser.mdot*(tf - t_now);
+        Chaser.m0 = Chaser.m0 - Chaser.mdot*(t_seg - t_now);
     end
     
     count = count + 1;
