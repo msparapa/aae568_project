@@ -56,7 +56,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 0*1e-8*eye(4); % Initial Covariance to test EKF
+Nav.P = 1e-8*eye(4); % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -74,12 +74,12 @@ Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
 
-Cov.R = eye(4)*1e-10; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+Cov.R = 0*eye(4)*1e-12; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = eye(2)*1e-10; % Measurement noise (y = Hx + Gz)
+        Cov.Z = eye(2)*1e-12; % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
