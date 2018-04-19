@@ -74,7 +74,7 @@ Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
 
-Cov.R = 0*eye(4)*1e-12; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+Cov.R = eye(4)*1e-10; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 
 switch(sim_opt.estim)
     case 'ekf'
@@ -277,7 +277,7 @@ while(~gameover)
             'linewidth', 2, 'color', colors(2,:));
         
         plot(ax_r, [t_now, t_seg], Target.r0*[1,1], 'k--', 'linewidth', 2);
-        plot(ax_theta, [t_now, t_seg], Target.theta0*[1,1], 'k--', 'linewidth', 2);
+        plot(ax_theta, [t_now, t_seg], Target.theta0*[1,1] + Target.thetadot0*[t_now, t_seg], 'k--', 'linewidth', 2);
         plot(ax_rdot, [t_now, t_seg], Target.rdot0*[1,1], 'k--', 'linewidth', 2);
         plot(ax_thetadot, [t_now, t_seg], Target.thetadot0*[1,1], 'k--', 'linewidth', 2);
     end
