@@ -1,4 +1,4 @@
-function [x_update,P_update] = ukf(h,x_initial,w,z,obs,num_iterations,Wm,Wc) 
+function [x_update,P_update] = ukf(h,x_initial,P_initial,w,z,obs,num_iterations,Wm,Wc) 
 
 [~,sigma_points]     = size(x_initial);
 p1                  = size(x_initial,1);
@@ -46,5 +46,5 @@ for i = 1:num_iterations
    Pyy            = Ey*diag(Wc)*Ey'+ Zcov;            % Innovation
    K              = Pxy/Pyy;                          % Kalman Gain
    x_update       = x_estimate + K*(y - y_forecast);  % State Update
-   P_update       = cov(x_initial') - K*Pxy';         % Covariance Update
+   P_update       = P_initial - K*Pxy';               % Covariance Update
 end
