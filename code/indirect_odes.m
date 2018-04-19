@@ -7,10 +7,10 @@ function dX_dtau = indirect_odes(tau, X, tf_rel, Chaser)
 %   Inputs:
 %
 %       - tau: nondimensional propagation time, relative to the beginning
-%       of the segment (i.e., tof)
+%       of the segment: tau = [0, ..., 1]
 %       - X: state vector, 
 %           X = [r, theta, rdot, thetadot, lambda1, ..., lambda4]
-%       - tf: time of flight for the segment
+%       - tf_rel: time of flight for the segment
 %       - Chaser: structure that stores information about the Chaser s/c
 %
 %   Outputs:

@@ -1,17 +1,34 @@
-function dX_dt = prop_EKF_odes(t,X,Chaser,Cov,alpha,alpha_t)
+function dX_dt = prop_EKF_odes(t, X, Chaser, Cov, alpha, alpha_t)
+% PROP_EKF_ODES Propagate dynamics and covaraince for the EKF
+%
+%   dX_dt = prop_EKF_odes(t, X, Chaser, Cov, alpha, alpha_t)
+%
+%   Inputs:
+%   
+%       - t: time relative to mission start
+%       - X: State vector
+%       - Chaser: Structure containing information about the Chaser s/c
+%       - Cov: Structure containing information about the Covariance
+%       - alpha: Optimal control
+%       - alpha_t: time associated with alpha; relative to mission start
+%
+%   Outputs:
+%
+%       - dX_dt: derivative of X w.r.t. t
 
 r = X(1);
 theta = X(2);
 rdot = X(3);
 thetadot = X(4);
 
+P = zeros(4,4);
 for i = 1:4
     for j = 1:4
         P(i,j) = X(4*i+j);
     end
 end
 
-m = Chaser.m0-Chaser.mdot*t;
+m = 1 - Chaser.mdot*t;
 T = Chaser.T;
 
 alpha_i = interp1(alpha_t,alpha,t);
@@ -19,6 +36,7 @@ alpha_i = interp1(alpha_t,alpha,t);
 cos_gamma = cos(alpha_i-theta);
 sin_gamma = sin(alpha_i-theta);
 
+dX_dt = zeros(size(X));
 dX_dt(1) = rdot;
 dX_dt(2) = thetadot;
 dX_dt(3) = r*thetadot - 1/r^2 + T/m*cos_gamma;
@@ -41,7 +59,7 @@ for i = 1:4
     end
 end
 
-dX_dt = dX_dt';
+end
 
 
 

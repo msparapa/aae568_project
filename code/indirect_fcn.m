@@ -1,5 +1,5 @@
-function [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser, Target,...
-    Nav, t0, plot_opt, lambda0_guess, tf_rel_guess)
+function [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser,...
+    Target, Nav, t0, plot_opt, lambda0_guess, tf_rel_guess)
 % INDIRECT_FCN Solve the indirect optimization problem
 %
 %   [...] = indirect_fcn(Chaser, Target, Nav, t0, plot_opt, lambda0_guess,
@@ -35,7 +35,7 @@ function [alpha, alpha_t, tf, t_seg, lambda_seg] = indirect_fcn(Chaser, Target,.
 %   Author: Collin York
 %   Version: April 18, 2018
 
-yinit = [Nav.r0; Nav.theta0; Nav.rdot0; Nav.thetadot0; lambda0_guess];
+yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot; lambda0_guess];
 Nt = 500;
 tau = linspace(0, 1, Nt)'; % non-dimensional time vector
 
@@ -43,45 +43,44 @@ solinit = bvpinit(tau, yinit, tf_rel_guess);
 
 bvp_opts = bvpset('Stats','on');
 
-odes = @(tau, X, tf) indirect_odes(tau, X, tf_rel, Chaser);
-bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
+odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
+bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
 sol = bvp4c(odes, bcs, solinit, bvp_opts);
-tf = sol.parameters + t0; % tf_rel + t0 ; puts tf in abs time
+tf = sol.parameters + t0;   % Time at end of arc, relative to mission start
 X0 = sol.y(:,1);
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
-[alpha_t,X] = ode113(odes_tf, tau*tf, X0, options);
+[alpha_t,X] = ode113(odes_tf, [t0, tf], X0, options);
 
 [r, theta, x, y, alpha, gamma, alpha_hor, i_quiv] = unpack_X(X);
 
-i_ts_opt = find(alpha_t < Chaser.ts_opt, 1, 'last');
+i_ts_opt = find(alpha_t < t0 + Chaser.ts_opt, 1, 'last');
 t_seg = alpha_t(i_ts_opt);
 lambda_seg = X(i_ts_opt, 5:8).';
 
 if plot_opt.indirect
-    plot_opt.i = plot_opt.i + 1;
-    figure(plot_opt.i);
-    plot(x, y);
-    axis equal;
-    hold on;
-    plot(Target.r0*cos(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0),...
-        Target.r0*sin(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0));
-    hold off;
+%     plot_opt.i = plot_opt.i + 1;
+%     figure(plot_opt.i);
+%     plot(x, y);
+%     axis equal;
+%     hold on;
+%     plot(Target.r0*cos(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0),...
+%         Target.r0*sin(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0));
+%     hold off;
+% 
+%     plot_opt.i = plot_opt.i + 1;
+%     figure(plot_opt.i);
+%     plot(r);
+%     hold on;
+%     plot(theta);
+%     hold off;
+% 
+%     plot_opt.i = plot_opt.i + 1;
+%     figure(plot_opt.i);
+%     plot(alpha/pi*180);
 
-    plot_opt.i = plot_opt.i + 1;
-    figure(plot_opt.i);
-    plot(r);
-    hold on;
-    plot(theta);
-    hold off;
-
-    plot_opt.i = plot_opt.i + 1;
-    figure(plot_opt.i);
-    plot(alpha/pi*180);
-
-    close all;
     plot_opt.i = plot_opt.i + 1;
     figure(plot_opt.i);                                 
     hold on;

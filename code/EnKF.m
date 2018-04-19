@@ -1,4 +1,4 @@
-function [x_update] = EnKF(h,x_initial,w,z,obs,num_iterations) 
+function [x_update,cov_update] = EnKF(h,x_initial,w,z,obs,num_iterations) 
 
 [~,num_members]     = size(x_initial);
 p1                  = size(x_initial,1);
@@ -48,7 +48,8 @@ for i = 1:num_iterations
    Pxy            = Ex*Ey'/(num_members - 1);         % Cross-correlation
    Pyy            = Ey*Ey'/(num_members - 1) + Zcov;  % Innovation  
    K              = Pxy*inv(Pyy);                     % Kalman Gain
-   x_update       = x_estimate + K*(y - y_forecast);  % State Update  
+   x_update       = x_estimate + K*(y - y_forecast);  % State Update
+   cov_update     = cov(x_update');
    if i == num_iterations
        x_estimatebar = mean(x_estimate,2);
    end
