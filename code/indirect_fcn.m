@@ -44,9 +44,9 @@ yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot; lambda0_guess];
 %bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
 ICsolver0 = [yinit; tf_rel_guess];
-options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'Display','none');
+options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'MaxFunctionEvaluations',100000);
 [ICs, FVAL] = fsolve(@(X)indirect_fsolver(X,Chaser,Target,Nav,t0), ICsolver0, options);
-fprintf('\nfsolve |F| = %f\n',norm(FVAL));
+fprintf('\nfsolve |F| = %e\n',norm(FVAL));
 % sol = bvp4c(odes, bcs, solinit, bvp_opts);
 % tf = sol.parameters + t0;   % Time at end of arc, relative to mission start
 % X0 = sol.y(:,1);
