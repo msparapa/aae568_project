@@ -1,4 +1,4 @@
-function [x_update,P_update] = ukf(h,x_initial,P_initial,w,z,obs,num_iterations,Wm,Wc) 
+function [x_update, P_update] = ukf(h,x_initial,P_initial,w,z,obs,num_iterations,Wm,Wc) 
 
 [~,sigma_points]    = size(x_initial);
 p1                  = size(x_initial,1);

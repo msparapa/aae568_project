@@ -19,7 +19,7 @@ sim_opt.optim = 'indirect';
 % Which estimation method to use
 %
 %   - ekf   Extended Kalman Filter
-%   - ut    Unscented Transform
+%   - ut    Unscented Transform + Unscented Kalman Filter
 sim_opt.estim = 'ut';
 
 % Tolerance to check if state has reached final value
@@ -62,7 +62,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P0 = zeros(4); % Initial Covariance to test EKF
+Nav.P = zeros(4); % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -225,7 +225,8 @@ while(~gameover)
             w = 0;                                  % Process Noise Standard Deviation                              
             obs = [truObs(1,1); truObs(2,1)];       % Single [r,rhoDot] Measurement                     
             num_iterations = 1;
-            [x_update, postUpdateCov] = ukf(h,x_initial,w,z,obs,num_iterations,Wm,Wc);
+            [x_update, postUpdateCov] = ukf(h, x_initial, Nav.P, w, z,...
+                obs, num_iterations, Wm, Wc);
             
             % Update nav state
             x_update = mean(x_update, 2);
