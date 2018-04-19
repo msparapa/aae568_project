@@ -47,7 +47,7 @@ odes = @(tau, X, tf) indirect_odes(tau, X, tf_rel, Chaser);
 bcs = @(Y0, Yf, tf) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
 sol = bvp4c(odes, bcs, solinit, bvp_opts);
-tf = sol.parameters + t0;
+tf = sol.parameters + t0; % tf_rel + t0 ; puts tf in abs time
 X0 = sol.y(:,1);
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
