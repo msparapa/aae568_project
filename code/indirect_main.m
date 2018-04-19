@@ -20,7 +20,7 @@ sim_opt.optim = 'indirect';
 %
 %   - ekf   Extended Kalman Filter
 %   - ut    Unscented Transform + Unscented Kalman Filter
-sim_opt.estim = 'ut';
+sim_opt.estim = 'ekf';
 
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
