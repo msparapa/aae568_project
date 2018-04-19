@@ -26,28 +26,29 @@ sim_opt.estim = 'ut';
 sim_opt.stateTol = 1e-6;
 
 %% Define Dimensional Initial Conditions
-charL = 6378 + 200;     % characteristic length, km; TODO - DEFINE THIS
-charT = 1;              % characteristic time, sec; TODO - DEFINE THIS
-charM = 500;            % characteristic mass, kg; TODO - DEFINE THIS
-muEarth = 3.986e5;      % Earth gravity parameter, km^3/s^2
-
 % Dimensional initial conditions
-T = 1;                  % Thrust, Newtons; TODO - DEFINE THIS
-Isp = 1500;             % Specific impulse, sec
+T = 0.2034;                % Thrust, kN; TODO - DEFINE THIS
+Isp = 3000;             % Specific impulse, sec
 g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
+M0 = 500;               % Initial S/C Mass, kg
 
 r0 = 7000;              % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
+
+charL = 7000;     % characteristic length, km; Initial Orbit Radius
+charM = 500;            % characteristic mass, kg; S/C mass
+muEarth = 3.986e5;      % Earth gravity parameter, km^3/s^2
+charT = sqrt(charL^3/muEarth); % characteristic time, sec; sqrt(r0^3/mu)
 
 % Compute thetadot for a circular orbit; rad/s
 thetadot0 = sqrt(muEarth/r0^3);
 
 % Chaser Nondimensional Parameters
 % These will be fed in by main code
-Chaser.T = 0.05;        % Non-dim thrust (Value tends to work well)
-Chaser.mdot = 0.001;    % Non-dim mdot (Value tends to work well)
-Chaser.m0 = 1;          % Non-dim mass; starts at 1; not state variable
+Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust (Value tends to work well)
+Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot (Value tends to work well)
+Chaser.m0 = M0/charM;          % Non-dim mass; starts at 1; not state variable
 Chaser.ts_opt = 1;      % Non-dim time-of-flight for one "leg" between observations 
 
 % Actual Initial State for Optimizer at t0
@@ -78,7 +79,7 @@ Cov.R = eye(4)*1e-4; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = eye(4)*1e-4; % Measurement noise (y = x + z)
+        Cov.Z = eye(2)*1e-4; % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
@@ -201,10 +202,10 @@ while(~gameover)
     
     switch(lower(sim_opt.estim))
         case 'ekf'
-            H = eye(4);         % TODO - what is this?
-            G = eye(4);         % TODO - what is this?
+            H = [1, 0, 0, 0; 0, 0, 1, 0];  % y = H*x + G*z; r and rdot measurements
+            G = eye(2);         % y = H*x + G*z
             L_k = (Nav.P * H.') / (H*Nav.P*H.' + G*Cov.Z*G.');
-            y = H*Actual.X + Cov.Z*randn(4,1);  % measurement + noise
+            y = H*Actual.X + [sqrt(Cov.Z(1,1))*randn(1,1); sqrt(Cov.Z(2,2))*randn(1,1)];  % measurement + noise; z = [sig1*z1; sig2*z2]
             % apriori nav estimate
             nav_pre = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
             % nav estimate post observation
