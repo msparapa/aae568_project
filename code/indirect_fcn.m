@@ -43,7 +43,8 @@ yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot; lambda0_guess];
 %odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
 %bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
-ICsolver0 = [lambda0_guess; tf_rel_guess];
+slack_guess = sqrt(tf_rel_guess);
+ICsolver0 = [lambda0_guess; tf_rel_guess; slack_guess];
 options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'MaxFunctionEvaluations',1000,'MaxIterations',1000);
 [ICs, FVAL] = fsolve(@(X)indirect_fsolver(X,Chaser,Target,Nav,t0,yinit(1:4)), ICsolver0, options);
 fprintf('\nfsolve |F| = %e\n',norm(FVAL));
@@ -56,7 +57,7 @@ tf = ICs(5) + t0;
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
-[alpha_t,X] = ode113(odes_tf, [t0, tf], X0, options);
+[alpha_t,X] = ode45(odes_tf, [t0, tf], X0, options);
 
 [r, theta, x, y, alpha, gamma, alpha_hor, i_quiv] = unpack_X(X);
 
