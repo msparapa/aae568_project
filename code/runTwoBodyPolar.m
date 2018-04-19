@@ -18,7 +18,10 @@ revs  = 4;                 % revs to propagate
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
 mdot  = -T/Isp/g0;         % mass flow rate
-x0    = [a;0;0;w;mdot];
+q     = 0;                 % std dev 
+x0    = [a;0;0;w;mdot];    % initial state 
+s0    = [x0(1:4)+q*...     % initial state with noise
+         randn(4,1);x0(5)];    
 f     = twobodyPolar(x0,[0 revs*P],dt);
 
 % Plot the true orbit
@@ -43,29 +46,16 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10  -2.2077e-14
 options = struct; options.alpha = 1; options.beta = 2.0;  
 
 % Propagate all sigma points until time of measurement
-[statesOut,Wm,Wc,useSquareRoot] = unscentedTransformPolar( x0, C, options, 9, revs*P);
+[intMeans,intCovars,statesOut,Wm,Wc] = prop_UT( s0, C, options, 9, revs*P, dt);
 
-% Preallocation
-n = revs*P/dt+1;
-intMeans = zeros(n,5);
-intCovars = zeros(5,5,n);
-for h = 1:n
-    [intMean, intCovar] = unscentedTransformNoFcn(Wm, Wc, statesOut(:,:,h), useSquareRoot);
-    intMeans(h,:) = intMean;
-    intCovars(:,:,h) = intCovar;  
-end
-
-polar(statesOut(2,:,1),statesOut(1,:,1),'k.'); hold on;
-polar(statesOut(2,:,end),statesOut(1,:,end),'r.');
-
-%% Store Propagated Covariances
+%% Store Propagated Sigmas
 n = length(intCovars);
 storeCov = zeros(n,4);
 for i = 1:n
     storeCov(i,:) = sqrt(diag(intCovars(1:4,1:4,i)));
 end
 
-%% Update Propagated Particles using a UKF 
+%% Update Propagated Particles using a UKF
 truObs                    = [f(end,1);f(end,3)];
 z                         = [3;3e-3];                       % Measurement Noise
 h                         = @(j) updatePolarMeasurement(j);                                                                              
@@ -73,26 +63,13 @@ x_initial                 = statesOut(:,:,end);             % Sigma Points
 w                         = 0;                              % Process Noise Standard Deviation                              
 obs                       = [truObs(1,1);truObs(2,1)];      % Single [r,rhoDot] Measurement                     
 num_iterations            = 1;
-[x_update]                = EnKF(h,x_initial,w,z,obs,num_iterations);
-
-%% Calculate new covariance and propagate forward
-postUpdateCov = cov(x_update');
+[x_update,postUpdateCov]  = ukf(h,x_initial,w,z,obs,num_iterations,Wm,Wc);
 
 %% Propagate after update
 % Propagate all sigma points 
-[statesOutNew,Wm,Wc,useSquareRoot] = unscentedTransformPolar( mean(x_update,2), postUpdateCov, options, 9, revs*P);
+[intMeansNew,intCovarsNew,statesOutNew,Wm,Wc] = prop_UT( mean(x_update,2), postUpdateCov, options, 9, revs*P,dt);
 
-% Preallocation
-n = revs*P/dt+1;
-intMeansNew = zeros(n,5);
-intCovarsNew = zeros(5,5,n);
-for h = 1:n
-    [intMean, intCovar] = unscentedTransformNoFcn(Wm, Wc, statesOutNew(:,:,h), useSquareRoot);
-    intMeansNew(h,:) = intMean;
-    intCovarsNew(:,:,h) = intCovar;     
-end
-
-%% Store Propagated Covariances
+%% Store Propagated Sigmas
 n = length(intCovarsNew);
 storeCovNew = zeros(n,4);
 for i = 1:n
@@ -123,4 +100,32 @@ ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('1\sigma Uncertainty');
+set(gca,'gridlinestyle','--')
+
+figure();
+subplot(4,1,1)
+set(0,'DefaultAxesFontName', 'Arial'); 
+plot([0 t/3600],intMeans(:,1)/1e3,'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],intMeansNew(:,1)/1e3,'b-'); hold on;
+plot([0 t/3600],f(:,1)/1e3,'r-');
+ylabel('$r$, m','Interpreter','latex')
+subplot(4,1,2)
+plot([0 t/3600],intMeans(:,3)/1e3,'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],intMeansNew(:,3)/1e3,'b-'); hold on;
+plot([0 t/3600],f(:,3)/1e3,'r-');
+ylabel('$\dot{r}$, m/sec','Interpreter','latex')
+subplot(4,1,3)
+set(0,'DefaultAxesFontName', 'Arial'); 
+plot([0 t/3600],mod(intMeans(:,2)*180/pi,360),'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],mod(intMeansNew(:,2)*180/pi,360),'b-'); hold on;
+plot([0 t/3600],mod(f(:,2)*180/pi,360),'r-')
+ylabel('$\theta$, deg','Interpreter','latex')
+subplot(4,1,4)
+plot([0 t/3600],intMeans(:,4)*180/pi,'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],intMeansNew(:,4)*180/pi,'b-'); hold on;
+plot([0 t/3600],f(:,4)*180/pi,'r-')
+ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
+xlabel('\fontname{Times New Roman} Length of Propagation, hr');
+subplot(4,1,1)
+title('Trajectory');
 set(gca,'gridlinestyle','--')

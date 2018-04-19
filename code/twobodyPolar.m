@@ -6,5 +6,5 @@ function f = twobodyPolar(f0,tspan,dt)
 %...acceleration at each integration time step.
 tol = 1e-10;
 options = odeset('RelTol',tol,'AbsTol',tol);
-[~,p] = ode45('accel_polar', [tspan(1):dt:tspan(2)], f0,options);
+[~,p] = ode45('prop_UT_odes', [tspan(1):dt:tspan(2)], f0,options);
 f = p(:,:); 
