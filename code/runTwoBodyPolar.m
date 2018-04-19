@@ -66,12 +66,12 @@ end
     estCovars                 = zeros(5,5,N);                   % preallocate storage for estiamte covariances
 for k = 1:N
     truObs                    = meas(N,:)';                     % extract observation at Nth step 
-    z                         = [10;10e-3];                     % measurement noise (a noisier measurement is less trustworthy)
+    z                         = [3;3e-3];                     % measurement noise (a noisier measurement is less trustworthy)
     h                         = @(j) updatePolarMeasurement(j);
     w                         = 0;                              % process noise standard deviation
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
     num_iterations            = 1;
-    [x_update,postUpdateCov]= ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
+    [x_update,postUpdateCov]  = ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
 %     [x_update,postUpdateCov]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
     [meanOut,covarOut,sigmaPointsOut,~,~] = prop_UT( mean(x_update,2), postUpdateCov, options, 9, dt,dt/dt);  % Propagate measurement update to next time step
     ukfMean                   = meanOut(end,:)';
@@ -101,7 +101,7 @@ end
 
 t  = linspace(dt,revs*P,revs*P/dt);
 t2 = linspace(revs*P,revs*P*2,revs*P/dt);
-t3 = linspace(0,revs*P*2+dt,dt);
+t3 = linspace(dt,revs*P*2+dt,(revs*P*2+dt)/dt);
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
@@ -132,17 +132,20 @@ set(0,'DefaultAxesFontName', 'Arial');
 plot([0 t/3600],utMeans(:,1)/1e3,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,1)/1e3,'b-'); hold on;
 plot([0 t/3600],f(:,1)/1e3,'r-');
+plot([0 t3/3600],fTot(:,1)/1e3, 'g--');
 ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2)
 plot([0 t/3600],utMeans(:,3)/1e3,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,3)/1e3,'b-'); hold on;
 plot([0 t/3600],f(:,3)/1e3,'r-');
+plot([0 t3/3600],fTot(:,3)/1e3, 'g--');
 ylabel('$\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,3)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t/3600],mod(f(:,2)*180/pi,360),'r-')
+plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'g--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],utMeans(:,4)*180/pi,'b-'); grid on; hold on;
