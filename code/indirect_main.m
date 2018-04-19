@@ -51,21 +51,21 @@ Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot (Value tends to work wel
 Chaser.m0 = M0/charM;          % Non-dim mass; starts at 1; not state variable
 Chaser.ts_opt = 1;      % Non-dim time-of-flight for one "leg" between observations 
 
-% Actual Initial State for Optimizer at t0
-Actual.X = [1; 0; 0; 1];    %Current state [r, theta, rdot, thetadot]
-Actual.X_history = {};      % Each cell holds the state history for one segment
-Actual.t_history = {};      % Each cell holds the time associated with the state history
-Actual.alpha_history = {};
-Actual.alpha_t_history = {};
-
 % Filtered Nav Initial State for Optimizer at t0
 Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = zeros(4); % Initial Covariance to test EKF
+Nav.P = 0*1e-8*eye(4); % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
+
+% Actual Initial State for Optimizer at t0
+Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
+Actual.X_history = {};      % Each cell holds the state history for one segment
+Actual.t_history = {};      % Each cell holds the time associated with the state history
+Actual.alpha_history = {};
+Actual.alpha_t_history = {};
 
 % Target Actual State at t = 0 (note: not same as updated t0)
 Target.r0 = 1.01;
@@ -74,12 +74,12 @@ Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
 
-Cov.R = eye(4)*1e-4; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+Cov.R = 0*eye(4)*1e-12; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = eye(2)*1e-4; % Measurement noise (y = Hx + Gz)
+        Cov.Z = eye(2)*1e-10; % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
@@ -158,6 +158,9 @@ while(~gameover)
                 lambda0_guess = lambda_seg;         % Update
                 t_now = t_seg;                      % Update starting time
                 tf_rel_guess = tf - t_now ;         % Update TOF guess
+                if tf_rel_guess <= 0
+                    tf_rel_guess = 0.3;
+                end
             end
             [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser,...
                 Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);

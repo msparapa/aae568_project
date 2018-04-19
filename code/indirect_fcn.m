@@ -44,7 +44,7 @@ yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot; lambda0_guess];
 %bcs = @(Y0, Yf, tf_rel) indirect_bcs(Y0, Yf, tf_rel, Chaser, Target, Nav, t0);
 
 ICsolver0 = [yinit; tf_rel_guess];
-options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'MaxFunctionEvaluations',100000);
+options = optimoptions('fsolve','TolFun',1e-11,'TolX',1e-11,'MaxFunctionEvaluations',1000,'MaxIterations',1000);
 [ICs, FVAL] = fsolve(@(X)indirect_fsolver(X,Chaser,Target,Nav,t0), ICsolver0, options);
 fprintf('\nfsolve |F| = %e\n',norm(FVAL));
 % sol = bvp4c(odes, bcs, solinit, bvp_opts);
@@ -65,25 +65,6 @@ t_seg = alpha_t(i_ts_opt);
 lambda_seg = X(i_ts_opt, 5:8).';
 
 if plot_opt.indirect
-%     plot_opt.i = plot_opt.i + 1;
-%     figure(plot_opt.i);
-%     plot(x, y);
-%     axis equal;
-%     hold on;
-%     plot(Target.r0*cos(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0),...
-%         Target.r0*sin(Target.thetadot0*(linspace(t0,tf,100))+Target.theta0));
-%     hold off;
-% 
-%     plot_opt.i = plot_opt.i + 1;
-%     figure(plot_opt.i);
-%     plot(r);
-%     hold on;
-%     plot(theta);
-%     hold off;
-% 
-%     plot_opt.i = plot_opt.i + 1;
-%     figure(plot_opt.i);
-%     plot(alpha/pi*180);
 
     plot_opt.i = plot_opt.i + 1;
     figure(plot_opt.i);                                 
@@ -94,7 +75,7 @@ if plot_opt.indirect
     quiver(x(i_quiv),y(i_quiv),cos(alpha(i_quiv)),sin(alpha(i_quiv)),0.5,'r');
     scatter(x(1),y(1),'r');
     scatter(x(end),y(end),'g');
-    title('C. York - Min-Time Trajectory - Case 3');
+    title(sprintf('C. York - Min-Time Trajectory - Case 3\n|F|=%e',norm(FVAL)));
     xlabel('x (DU)');
     ylabel('y (DU)');
     legend('Solution','Ref.','Thrust Direction','t_0','t_f')
