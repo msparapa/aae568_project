@@ -19,7 +19,7 @@ N     = 10;                % number of measurements
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
 mdot  = -T/Isp/g0;         % mass flow rate
-q     = 1e-6;              % std dev 
+q     = 1e-5;              % std dev 
 x0    = [a;0;0;w;mdot];    % initial state 
 s0    = [x0(1:4)+q*...     % initial state with noise
          randn(4,1);x0(5)];    
@@ -66,7 +66,7 @@ end
     estCovars                 = zeros(5,5,N);                   % preallocate storage for estiamte covariances
 for k = 1:N
     truObs                    = meas(N,:)';                     % extract observation at Nth step 
-    z                         = [1;1e-3];                     % measurement noise (a noisier measurement is less trustworthy)
+    z                         = [1;3e-3];                     % measurement noise (a noisier measurement is less trustworthy)
     h                         = @(j) updatePolarMeasurement(j);
     w                         = 0;                              % process noise standard deviation
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
