@@ -79,7 +79,7 @@ Cov.R = eye(4)*1e-4; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = eye(4)*1e-4; % Measurement noise (y = x + z)
+        Cov.Z = eye(2)*1e-4; % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
@@ -202,10 +202,10 @@ while(~gameover)
     
     switch(lower(sim_opt.estim))
         case 'ekf'
-            H = eye(4);         % TODO - what is this?
-            G = eye(4);         % TODO - what is this?
+            H = [1, 0, 0, 0; 0, 0, 1, 0];  % y = H*x + G*z; r and rdot measurements
+            G = eye(2);         % y = H*x + G*z
             L_k = (Nav.P * H.') / (H*Nav.P*H.' + G*Cov.Z*G.');
-            y = H*Actual.X + Cov.Z*randn(4,1);  % measurement + noise
+            y = H*Actual.X + [sqrt(Cov.Z(1,1))*randn(1,1); sqrt(Cov.Z(2,2))*randn(1,1)];  % measurement + noise; z = [sig1*z1; sig2*z2]
             % apriori nav estimate
             nav_pre = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
             % nav estimate post observation
