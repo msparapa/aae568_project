@@ -5,7 +5,7 @@ colors = lines(5);
 
 % Plotting Options
 plot_opt.i = 0;             % last plot figure number
-plot_opt.indirect = true;   % whether or not to plot indirect optimization results
+plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
 plot_opt.nav = true;        % whether or not to plot navigation results
 
@@ -258,11 +258,13 @@ while(~gameover)
         x = Actual.X_history{end}(:,1).*cos(Actual.X_history{end}(:,2));
         y = Actual.X_history{end}(:,1).*sin(Actual.X_history{end}(:,2));
         h_true = plot(ax_traj, x, y, 'linewidth', 2, 'color', colors(1,:));
+        plot(ax_traj, x(end), y(end), 'ws', 'markerfacecolor', colors(1,:));
         
         % Plot Nav solution (where we think we are)
         x = Nav.X_history{end}(:,1).*cos(Nav.X_history{end}(:,2));
         y = Nav.X_history{end}(:,1).*sin(Nav.X_history{end}(:,2));
         h_nav = plot(ax_traj, x, y, 'linewidth', 2, 'color', colors(2,:));
+        plot(ax_traj, x(end), y(end), 'ws', 'markerfacecolor', colors(2,:));
         
         if(count == 0)
             grid(ax_traj, 'on');
@@ -293,17 +295,24 @@ while(~gameover)
         plot(ax_rdot, [t_now, t_seg], Target.rdot0*[1,1], 'k--', 'linewidth', 2);
         plot(ax_thetadot, [t_now, t_seg], Target.thetadot0*[1,1], 'k--', 'linewidth', 2);
     end
-    
-    if(plot_opt.nav)
-        plotErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
-    end
+
     %% Evaluate status
     %   Has spacecraft reached the target?
-    
     X_targ = getTargetState(Target, t_seg);
+    fprintf('Target State = [%f, %f, %f, %f]\n', X_targ);
+    
     X_chaser = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
+    fprintf('Chaser State = [%f, %f, %f, %f]\n', X_chaser);
+    
+    fprintf('Covariance Matrix:\n'); disp(Nav.P);
+    
+    [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
+    
+    % TODO -  Need to add check on covariance size??
+    
     state_err = norm(X_targ - X_chaser);
-    gameover = state_err < sim_opt.stateTol;
+    gameover = bInPos && bInVel;
+    keyboard;
     
     if(~gameover)
         % Update Chaser state
