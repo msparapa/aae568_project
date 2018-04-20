@@ -1,12 +1,12 @@
-function F = indirect_fsolver(X,Chaser,Target,Nav,t0,x0)
+function F = indirect_fsolver(X, Chaser, Target, Nav, t0, fixed_x0)
 
-X0 = [x0; X(1:4)];
+X0 = [fixed_x0; X(1:4)];
 tf_rel = X(5);
 slack = X(6);
 
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
-odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
-[tau,Y] = ode113(@(tau, X) indirect_odes(tau, X, tf_rel, Chaser),[0 1],X0,options);
+odes = @(tau, X) indirect_odes(tau, X, tf_rel, Chaser);
+[tau,Y] = ode113(odes, [0 1], X0, options);
 
 Yf = Y(end,:)';
 

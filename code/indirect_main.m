@@ -61,7 +61,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 0*1e-12*eye(4); % Initial Covariance to test EKF
+Nav.P = 1e-9*eye(4);                    % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -83,14 +83,14 @@ Target.thetadot0 = sqrt(1/Target.r0^3);
 %   is J_2,0 w/ magnitude 1e-5 km/s^2
 %   - At GEO (r = 42000 km), most signficant accel pert are J_2,0 and Lunar 
 %   gravity w/ magnitude 1e-8 km/s^2
-A = [zeros(2,4); zeros(2,2), eye(2)];
-Cov.R = A*1e-5*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+% A = [zeros(2,4); zeros(2,2), eye(2)];
+% Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+Cov.R = zeros(4);       % No noise in EOMs
 
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = [range_err, 0; 0, rr_err];
-%         Cov.Z = eye(2)*1e-12; % Measurement noise (y = Hx + Gz)
+        Cov.Z = [range_err, 0; 0, rr_err];  % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
@@ -144,7 +144,10 @@ end
 % Begin Mission Loop
 gameover = false;
 count = 0;
-while(~gameover)
+maxCount = 25;
+while(~gameover && count < maxCount)
+    fprintf('******************\nIteration %02d\n******************\n',...
+        count);
     %% Using current state est., compute optimal traj. to reach target
     %   
     %   Optimization method should spit out the FULL optimal control
@@ -312,21 +315,27 @@ while(~gameover)
     
     state_err = norm(X_targ - X_chaser);
     gameover = bInPos && bInVel;
-    keyboard;
+%     keyboard;
     
     if(~gameover)
         % Update Chaser state
         Chaser.m0 = Chaser.m0 - Chaser.mdot*(t_seg - t_now);
+        
+        if(Chaser.m0 < 0.8)
+            warning('Chaser mass = %f is unrealistic\n', Chaser.m0);
+        end
     end
     
     count = count + 1;
-    
-    if(gameover)
-        % Plot the final set of ellipses even if we didn't plot them along
-        % the way
-        if(~plot_opt.nav)
-            plot_opt.nav = true;
-            checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
-        end
-    end
+end
+
+if(~gameover)
+    warning('Process did not converge');
+end
+
+% Plot the final set of ellipses even if we didn't plot them along
+% the way
+if(~plot_opt.nav)
+    plot_opt.nav = true;
+    checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
 end

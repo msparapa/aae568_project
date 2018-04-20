@@ -54,7 +54,8 @@ if(plot_opt.nav)
         'markerfacecolor', 'b');
 
     hold off; grid on;
-    legend('1 \sigma Error', 'Nav State', 'Actual State', 'Target State');
+    legend('1 \sigma Error', 'Nav State', 'Actual State', 'Target State',...
+        'location', 'best');
     xlabel('r, nondim');
     ylabel('\theta, nondim');
 end
@@ -89,7 +90,8 @@ if(plot_opt.nav)
     plot(Target.rdot0, Target.thetadot0, 'bd', 'markerfacecolor', 'b');
 
     hold off; grid on;
-    legend('1 \sigma Error', 'Nav State', 'Actual State', 'Target State');
+    legend('1 \sigma Error', 'Nav State', 'Actual State', 'Target State',...
+        'location', 'best');
     xlabel('$\dot{r}$, nondim', 'interpreter', 'latex');
     ylabel('$\dot{\theta}$, nondim', 'interpreter', 'latex');
 end
