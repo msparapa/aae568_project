@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = true;        % whether or not to plot navigation results
+plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -320,4 +320,13 @@ while(~gameover)
     end
     
     count = count + 1;
+    
+    if(gameover)
+        % Plot the final set of ellipses even if we didn't plot them along
+        % the way
+        if(~plot_opt.nav)
+            plot_opt.nav = true;
+            checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
+        end
+    end
 end

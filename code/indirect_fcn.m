@@ -57,7 +57,7 @@ tf = ICs(5) + t0;
 
 options = odeset('RelTol', 1e-12, 'AbsTol', 1e-12);
 odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
-[alpha_t,X] = ode45(odes_tf, [t0, tf], X0, options);
+[alpha_t,X] = ode113(odes_tf, [t0, tf], X0, options);
 
 [r, theta, x, y, alpha, gamma, alpha_hor, i_quiv] = unpack_X(X);
 

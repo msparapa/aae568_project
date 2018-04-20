@@ -6,7 +6,7 @@ slack = X(6);
 
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 odes = @(tau, X, tf_rel) indirect_odes(tau, X, tf_rel, Chaser);
-[tau,Y] = ode45(@(tau, X) indirect_odes(tau, X, tf_rel, Chaser),[0 1],X0,options);
+[tau,Y] = ode113(@(tau, X) indirect_odes(tau, X, tf_rel, Chaser),[0 1],X0,options);
 
 Yf = Y(end,:)';
 
