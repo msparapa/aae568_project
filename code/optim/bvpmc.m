@@ -20,10 +20,14 @@ options.nQuads = nQuads;
 options.nParams = nParams;
 options.odefun = odefun;
 options.bcfun = bcfun;
+if options.isdirect
+    options.nControls = length(sol.control(:,1));
+end
 options.consts = sol.consts;
 N = options.Nodes;
 
-constraints = @(X)(collocation_constraints(X,options));
+constraints = @(X)(collocation_constraints(X, options));
+cost = @(X)(collocation_cost(X, options));
 
 x0 = [];
 for ii = 1:nOdes
@@ -31,16 +35,41 @@ for ii = 1:nOdes
 end
 x0 = [x0, sol.parameters];
 
-[X,fval,exitflag,output,lambda,grad,hessian] = fmincon(@collocation_cost, x0, [], [], [], [], [], [], constraints, options);
+if options.isdirect
+    for ii = 1:options.nControls
+        x0 = [x0, sol.control(ii,:)];
+    end
+end
+
+[X,fval,exitflag,output,lambda,grad,hessian] = fmincon(cost, x0, [], [], [], [], [], [], constraints, options);
+
+sol = unwrap_params(X, options);
+
+
+end
+
+function [X] = wrap_params(sol, options)
+% Do I need this?
+end
+
+function [sol] = unwrap_params(X, options)
+N = options.Nodes;
 
 for ii = 1:options.nOdes
     y(ii,:) = X(((ii-1)*N+1):((ii)*N));
 end
 
-params = X(options.nOdes*N+1:end);
+params = X(options.nOdes*N+1:(options.nOdes*N)+options.nParams);
 
+if options.isdirect
+    b = (options.nOdes*N)+options.nParams;
+    for ii = 1:options.nControls
+        control(ii,:) = X(b+1+(ii-1)*N:b+(ii)*N);
+    end
+end
 sol.y = y;
 sol.parameters = params;
+sol.control = control;
 
 end
 
@@ -49,32 +78,34 @@ c = [];
 ceq = [];
 N = options.Nodes;
 
-for ii = 1:options.nOdes
-    y(ii,:) = X(((ii-1)*N+1):((ii)*N));
-end
+sol = unwrap_params(X, options);
+y = sol.y;
+params = sol.parameters;
+control = sol.control;
 
-params = X(options.nOdes*N+1:end);
-
-dX = options.odefun(0, y, params, options.consts);
+dX = options.odefun(0, y, control, params, options.consts);
 
 dp0 = dX(:,1:end-1);
 dp1 = dX(:,2:end);
 p0 = y(:,1:end-1);
 p1 = y(:,2:end);
 
+
 midpoint_predicted = 1/2*(p0+p1) + 1/(N-1)*(dp0-dp1)/8;
 midpoint_derivative_predicted = -3/2*(N-1)*(p0-p1) - 1/4*(dp0+dp1);
-midpoint_derivative_actual = options.odefun(0, midpoint_predicted, params, options.consts);
+midpoint_derivative_actual = options.odefun(0, midpoint_predicted, control(:,1:end-1), params, options.consts);
 
 collo_constraint = midpoint_derivative_predicted - midpoint_derivative_actual;
 ceq = [ceq; collo_constraint(:)];
 
-bcs = options.bcfun(0, y(:,1), 1, y(:,end), 0, 0, params, options.consts);
+bcs = options.bcfun(0, y(:,1), control(:,1), 1, y(:,end), control(:,end), 0, 0, params, options.consts);
 
 ceq = [ceq;bcs'];
 
 end
 
-function [J] = collocation_cost(X)
-J=0;
+function [J] = collocation_cost(X, options)
+sol = unwrap_params(X, options);
+params = sol.parameters;
+J = params(1);
 end

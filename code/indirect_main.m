@@ -32,6 +32,7 @@ Isp = 3000;             % Specific impulse, sec
 g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
 M0 = 500;               % Initial S/C Mass, kg
 
+
 r0 = 6378 + 780;        % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
@@ -56,7 +57,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1e-12*eye(4); % Initial Covariance to test EKF
+Nav.P = 0*1e-12*eye(4); % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
