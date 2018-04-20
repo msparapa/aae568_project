@@ -61,7 +61,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1e-9*eye(4);                    % Initial Covariance to test EKF
+Nav.P = 1*1e-9*eye(4);                    % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -144,7 +144,7 @@ end
 % Begin Mission Loop
 gameover = false;
 count = 0;
-maxCount = 25;
+maxCount = 15;
 while(~gameover && count < maxCount)
     fprintf('******************\nIteration %02d\n******************\n',...
         count);
