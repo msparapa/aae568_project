@@ -28,7 +28,12 @@ y = 0;
 Q = eye(5)*q;
 R = eye(2)*r;
 
-for i = 1:500
+n = 20;
+storeXplus = zeros(5,n);
+storey = zeros(2,n);
+storePplus = zeros(5,5,n);
+
+for i = 1:n
 % f is the nonlinear state equations
 % Xplus is the state
 % Pplus is the covariance
@@ -39,8 +44,17 @@ for i = 1:500
 % Ajaco is the jacobian matrix of the state equations
 % Hjaco is the jacobian matrix of the measurement
 % equations
+y = f(Xplus); y = y(4:5,1)+rand(2,1);
 [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco);
+storeXplus(:,i) = Xplus;
+storey(:,i) = y;
+storePplus(:,:,i) = Pplus;
+display(i)
 end
+
+t = linspace(1,20,20);
+figure(); plot(t, storeXplus(4,:),'g--'); grid on; hold on;
+plot(t,storey(1,:),'rx'); 
 
 % Estimate Xplus and Pplus
 function [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco)
