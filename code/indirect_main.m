@@ -28,13 +28,13 @@ sim_opt.stateTol = 1e-6;
 
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
-T = 0.2034;             % Thrust, kN; TODO - DEFINE THIS
+T = 0.005605;             % Thrust, kN; TODO - DEFINE THIS
 Isp = 3000;             % Specific impulse, sec
 g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
 M0 = 500;               % Initial S/C Mass, kg
 
 
-r0 = 6378 + 780;        % Initial orbital radius of chaser, km
+r0 = 42164;        % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
 
