@@ -5,15 +5,16 @@ colors = lines(5);
 
 % Plotting Options
 plot_opt.i = 0;             % last plot figure number
-plot_opt.indirect = true;
-plot_opt.actual = true;
+plot_opt.indirect = true;   % whether or not to plot indirect optimization results
+plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
+plot_opt.nav = true;        % whether or not to plot navigation results
 
 % Options for simulation
 
 % Which optimization method to use
 %
 %   - indirect
-%   - colloc (TODO)
+%   - direct (TODO)
 sim_opt.optim = 'indirect';
 
 % Which estimation method to use
@@ -45,6 +46,9 @@ charT = sqrt(charL^3/muEarth); % characteristic time, sec; sqrt(r0^3/mu)
 % Compute thetadot for a circular orbit; rad/s
 thetadot0 = sqrt(muEarth/r0^3);
 
+range_err = (10/1000)/charL;            % 10 m -> nondim
+rr_err = (1/1000/1000)*charT/charL;     % 1 mm/s -> nondim
+            
 % Chaser Nondimensional Parameters
 % These will be fed in by main code
 Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust
@@ -85,7 +89,8 @@ Cov.R = A*1e-5*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) 
 switch(sim_opt.estim)
     case 'ekf'
         % Noise Covariance
-        Cov.Z = eye(2)*1e-12; % Measurement noise (y = Hx + Gz)
+        Cov.Z = [range_err, 0; 0, rr_err];
+%         Cov.Z = eye(2)*1e-12; % Measurement noise (y = Hx + Gz)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
@@ -229,7 +234,8 @@ while(~gameover)
         case 'ut'
             % Update propagated particles using a UKF
             truObs = [Actual.X(1); Actual.X(3)];
-            z = [1e-4; 3e-6];                          % Measurement Noise
+            
+            z = [range_err; rr_err];                % Measurement Noise
             h = @(j) updatePolarMeasurement(j);                                                                              
             x_initial = statesOut(:,:,end);         % Sigma Points                   
             w = 0;                                  % Process Noise Standard Deviation                              
@@ -288,6 +294,9 @@ while(~gameover)
         plot(ax_thetadot, [t_now, t_seg], Target.thetadot0*[1,1], 'k--', 'linewidth', 2);
     end
     
+    if(plot_opt.nav)
+        plotErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
+    end
     %% Evaluate status
     %   Has spacecraft reached the target?
     
