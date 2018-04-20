@@ -27,17 +27,17 @@ sim_opt.stateTol = 1e-6;
 
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
-T = 0.2034;                % Thrust, kN; TODO - DEFINE THIS
+T = 0.2034;             % Thrust, kN; TODO - DEFINE THIS
 Isp = 3000;             % Specific impulse, sec
 g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
 M0 = 500;               % Initial S/C Mass, kg
 
-r0 = 7000;              % Initial orbital radius of chaser, km
+r0 = 6378 + 780;        % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
 
-charL = 7000;     % characteristic length, km; Initial Orbit Radius
-charM = 500;            % characteristic mass, kg; S/C mass
+charL = r0;             % characteristic length, km; Initial Orbit Radius
+charM = M0;             % characteristic mass, kg; S/C mass
 muEarth = 3.986e5;      % Earth gravity parameter, km^3/s^2
 charT = sqrt(charL^3/muEarth); % characteristic time, sec; sqrt(r0^3/mu)
 
@@ -46,8 +46,8 @@ thetadot0 = sqrt(muEarth/r0^3);
 
 % Chaser Nondimensional Parameters
 % These will be fed in by main code
-Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust (Value tends to work well)
-Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot (Value tends to work well)
+Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust
+Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot
 Chaser.m0 = M0/charM;          % Non-dim mass; starts at 1; not state variable
 Chaser.ts_opt = 1;      % Non-dim time-of-flight for one "leg" between observations 
 
@@ -73,8 +73,13 @@ Target.theta0 = 0.21;
 Target.rdot0 = 0;
 Target.thetadot0 = sqrt(1/Target.r0^3);
 
-
-Cov.R = 0*eye(4)*1e-12; % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
+% Data from Montenbruk & Gill: 
+%   - At LEO (e.g. Iridium at r = 63780 + 780), most significant accel pert
+%   is J_2,0 w/ magnitude 1e-5 km/s^2
+%   - At GEO (r = 42000 km), most signficant accel pert are J_2,0 and Lunar 
+%   gravity w/ magnitude 1e-8 km/s^2
+A = [zeros(2,4); zeros(2,2), eye(2)];
+Cov.R = A*1e-5*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
 
 switch(sim_opt.estim)
     case 'ekf'
