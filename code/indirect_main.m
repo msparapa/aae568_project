@@ -147,7 +147,7 @@ gameover = false;
 count = 0;
 
 while(~gameover && count < sim_opt.maxCount)
->>>>>>> 628d1625b404546b41c0792702f78979a84b0862
+
     fprintf('******************\nIteration %02d\n******************\n',...
         count);
     %% Using current state est., compute optimal traj. to reach target
