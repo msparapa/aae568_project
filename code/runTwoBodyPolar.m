@@ -81,7 +81,7 @@ end
     estCovars                 = zeros(5,5,N);                   % preallocate storage for estiamte covariances
 for k = 1:N
     truObs                    = meas(k,:)';                     % extract observation at Nth step 
-    z                         = [1;1e-3];                       % measurement noise (a noisier measurement is less trustworthy)
+    z                         = [5;5e-3];                       % measurement noise (a noisier measurement is less trustworthy)
     h                         = @(j) updatePolarMeasurement(j);
     w                         = 0;                              % process noise standard deviation
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
@@ -146,27 +146,23 @@ subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],utMeans(:,1)/1e3,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,1)/1e3,'b-'); hold on;
-plot([0 t/3600],f(:,1)/1e3,'r-');
-plot([0 t3/3600],fTot(:,1)/1e3, 'g--');
+plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
 ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2)
 plot([0 t/3600],utMeans(:,3)/1e3,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,3)/1e3,'b-'); hold on;
-plot([0 t/3600],f(:,3)/1e3,'r-');
-plot([0 t3/3600],fTot(:,3)/1e3, 'g--');
+plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
 ylabel('$\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,3)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
-plot([0 t/3600],mod(f(:,2)*180/pi,360),'r-')
-plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'g--');
+plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],utMeans(:,4)*180/pi,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,4)*180/pi,'b-'); hold on;
-plot([0 t/3600],f(:,4)*180/pi,'r-'); hold on;
-plot([0 t3/3600],fTot(:,4)*180/pi, 'g--');
+plot([0 t3/3600],fTot(:,4)*180/pi, 'r--');
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
