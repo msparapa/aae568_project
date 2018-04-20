@@ -3,9 +3,9 @@
 clear all; clc; close all;
 colors = lines(5);
 
-% Options to Plot Indirect Optimization
-plot_opt.indirect = 1;      % 1=plot, 0=no plot
+% Plotting Options
 plot_opt.i = 0;             % last plot figure number
+plot_opt.indirect = true;
 plot_opt.actual = true;
 
 % Options for simulation
@@ -48,8 +48,8 @@ thetadot0 = sqrt(muEarth/r0^3);
 % These will be fed in by main code
 Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust
 Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot
-Chaser.m0 = M0/charM;          % Non-dim mass; starts at 1; not state variable
-Chaser.ts_opt = 1;      % Non-dim time-of-flight for one "leg" between observations 
+Chaser.m0 = M0/charM;                    % Non-dim mass; starts at 1; not state variable
+Chaser.ts_opt = 300/charT;               % Non-dim time-of-flight for one "leg" between observations 
 
 % Filtered Nav Initial State for Optimizer at t0
 Nav.r = 1;
@@ -164,7 +164,7 @@ while(~gameover)
                 t_now = t_seg;                      % Update starting time
                 tf_rel_guess = tf - t_now ;         % Update TOF guess
                 if tf_rel_guess <= 0
-                    tf_rel_guess = 0.3;
+                    tf_rel_guess = 1.1*Chaser.ts_opt;
                 end
             end
             [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser,...
