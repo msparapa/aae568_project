@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = true;        % whether or not to plot navigation results
+plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -26,7 +26,7 @@ sim_opt.estim = 'ut';
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
 
-sim_opt.maxCount = 1;
+sim_opt.maxCount = 25;
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
 T = 0.005605;             % Thrust, kN; TODO - DEFINE THIS
@@ -62,7 +62,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1e-5*eye(4);                    % Initial Covariance to test EKF
+Nav.P = 1e-2*eye(4);                    % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
