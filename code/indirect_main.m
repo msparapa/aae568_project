@@ -26,6 +26,7 @@ sim_opt.estim = 'ekf';
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
 
+sim_opt.maxCount = 100;
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
 T = 0.005605;             % Thrust, kN; TODO - DEFINE THIS
@@ -34,7 +35,7 @@ g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
 M0 = 500;               % Initial S/C Mass, kg
 
 
-r0 = 42164;        % Initial orbital radius of chaser, km
+r0 = 42164;             % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
 
@@ -54,14 +55,14 @@ rr_err = (1/1000/1000)*charT/charL;     % 1 mm/s -> nondim
 Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust
 Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot
 Chaser.m0 = M0/charM;                    % Non-dim mass; starts at 1; not state variable
-Chaser.ts_opt = 300/charT;               % Non-dim time-of-flight for one "leg" between observations 
+Chaser.ts_opt = 1800/charT;               % Non-dim time-of-flight for one "leg" between observations 
 
 % Filtered Nav Initial State for Optimizer at t0
 Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1e-9*eye(4);                    % Initial Covariance to test EKF
+Nav.P = 1*1e-9*eye(4);                    % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -144,8 +145,9 @@ end
 % Begin Mission Loop
 gameover = false;
 count = 0;
-maxCount = 200;
-while(~gameover && count < maxCount)
+
+while(~gameover && count < sim_opt.maxCount)
+>>>>>>> 628d1625b404546b41c0792702f78979a84b0862
     fprintf('******************\nIteration %02d\n******************\n',...
         count);
     %% Using current state est., compute optimal traj. to reach target
@@ -309,12 +311,16 @@ while(~gameover && count < maxCount)
     
     fprintf('Covariance Matrix:\n'); disp(Nav.P);
     
-    [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
-    
+%     [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
+    if(det(Nav.P) > 0)
+        [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
+        gameover = bInPos && bInVel;
+    else
+        gameover = norm(X_targ - X_chaser) < sim_opt.stateTol ;
+    end
     % TODO -  Need to add check on covariance size??
     
-    state_err = norm(X_targ - X_chaser);
-    gameover = bInPos && bInVel;
+    
 %     keyboard;
     
     if(~gameover)
