@@ -27,16 +27,16 @@ sim_opt.stateTol = 1e-6;
 
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
-T = 0.2034;                % Thrust, kN; TODO - DEFINE THIS
+T = 0.005605;                % Thrust, kN;
 Isp = 3000;             % Specific impulse, sec
 g0 = 9.80665/1000;      % Mean Earth gravity, km/s^2
 M0 = 500;               % Initial S/C Mass, kg
 
-r0 = 7000;              % Initial orbital radius of chaser, km
+r0 = 42164;              % Initial orbital radius of chaser, km
 theta0 = 0;             % Initial longigutde of chaser, rad
 rdot0 = 0;              % Initial radial velocity of chaser, km/s
 
-charL = 7000;     % characteristic length, km; Initial Orbit Radius
+charL = r0;     % characteristic length, km; Initial Orbit Radius
 charM = 500;            % characteristic mass, kg; S/C mass
 muEarth = 3.986e5;      % Earth gravity parameter, km^3/s^2
 charT = sqrt(charL^3/muEarth); % characteristic time, sec; sqrt(r0^3/mu)
@@ -56,7 +56,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1e-12*eye(4); % Initial Covariance to test EKF
+Nav.P = 0*1e-12*eye(4); % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
