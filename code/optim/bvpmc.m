@@ -79,26 +79,28 @@ ceq = [];
 N = options.Nodes;
 
 sol = unwrap_params(X, options);
+x = linspace(0,1,N);
 y = sol.y;
 params = sol.parameters;
 control = sol.control;
 
-dX = options.odefun(0, y, control, params, options.consts);
+dX = options.odefun(x, y, control, params, options.consts);
 
 dp0 = dX(:,1:end-1);
 dp1 = dX(:,2:end);
 p0 = y(:,1:end-1);
 p1 = y(:,2:end);
 
+x_midpoint = (x(2:end) + x(1:end-1))/2;
 
 midpoint_predicted = 1/2*(p0+p1) + 1/(N-1)*(dp0-dp1)/8;
 midpoint_derivative_predicted = -3/2*(N-1)*(p0-p1) - 1/4*(dp0+dp1);
-midpoint_derivative_actual = options.odefun(0, midpoint_predicted, control(:,1:end-1), params, options.consts);
+midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, control(:,1:end-1), params, options.consts);
 
 collo_constraint = midpoint_derivative_predicted - midpoint_derivative_actual;
 ceq = [ceq; collo_constraint(:)];
 
-bcs = options.bcfun(0, y(:,1), control(:,1), 1, y(:,end), control(:,end), 0, 0, params, options.consts);
+bcs = options.bcfun(x(1), y(:,1), control(:,1), x(end), y(:,end), control(:,end), 0, 0, params, options.consts);
 
 ceq = [ceq;bcs];
 

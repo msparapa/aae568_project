@@ -1,4 +1,4 @@
-function dX_dtau = direct_odes(t, X, u, params, consts)
+function dX_dtau = direct_eoms(t, X, u, params, consts)
 
 r = X(1,:);
 theta = X(2,:);

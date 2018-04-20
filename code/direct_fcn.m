@@ -6,7 +6,7 @@ slack_guess = sqrt(tf_rel_guess);
 ICsolver0 = [tf_rel_guess; slack_guess];
 
 options = optimset('Algorithm','sqp','display','off');
-options.Nodes = 30;
+options.Nodes = 50;
 
 T = linspace(0, 1, options.Nodes);
 solinit0 = bvpinit(T, yinit', ICsolver0);
