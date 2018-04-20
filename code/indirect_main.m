@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = false;        % whether or not to plot navigation results
+plot_opt.nav = true;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -21,12 +21,12 @@ sim_opt.optim = 'indirect';
 %
 %   - ekf   Extended Kalman Filter
 %   - ut    Unscented Transform + Unscented Kalman Filter
-sim_opt.estim = 'ekf';
+sim_opt.estim = 'ut';
 
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
 
-sim_opt.maxCount = 50;
+sim_opt.maxCount = 1;
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
 T = 0.005605;             % Thrust, kN; TODO - DEFINE THIS
