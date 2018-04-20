@@ -33,7 +33,7 @@ x0 = [];
 for ii = 1:nOdes
     x0 = [x0, sol.y(ii,:)];
 end
-x0 = [x0, sol.parameters];
+x0 = [x0, sol.parameters'];
 
 if options.isdirect
     for ii = 1:options.nControls
@@ -100,7 +100,7 @@ ceq = [ceq; collo_constraint(:)];
 
 bcs = options.bcfun(0, y(:,1), control(:,1), 1, y(:,end), control(:,end), 0, 0, params, options.consts);
 
-ceq = [ceq;bcs'];
+ceq = [ceq;bcs];
 
 end
 
