@@ -108,6 +108,6 @@ end
 
 function [J] = collocation_cost(X, options)
 sol = unwrap_params(X, options);
-params = sol.parameters;
-J = params(1);
+x = linspace(0,1,options.Nodes);
+J = options.cost(x, sol.y, sol.parameters, options.consts);
 end
