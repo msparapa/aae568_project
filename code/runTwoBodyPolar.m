@@ -144,29 +144,30 @@ set(gca,'gridlinestyle','--')
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],utMeans(:,1)/1e3,'b-'); grid on; hold on;
+plot([0 t/3600],utMeans(:,1)/1e3,'g-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,1)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
 ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2)
-plot([0 t/3600],utMeans(:,3)/1e3,'b-'); grid on; hold on;
+plot([0 t/3600],utMeans(:,3)/1e3,'g-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,3)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
 ylabel('$\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,3)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'b-'); grid on; hold on;
+plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'g-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,4)
-plot([0 t/3600],utMeans(:,4)*180/pi,'b-'); grid on; hold on;
+plot([0 t/3600],utMeans(:,4)*180/pi,'g-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],utMeansNew(:,4)*180/pi,'b-'); hold on;
 plot([0 t3/3600],fTot(:,4)*180/pi, 'r--');
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('Trajectory');
+legend('Traj Prior to Update','Traj After Update','True Traj');
 set(gca,'gridlinestyle','--')
 
 % Residuals 

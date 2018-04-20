@@ -80,13 +80,31 @@ Pplus = eye(4);
 % Nonlinear state equation (f) 
 f = @(x)[x(3);
          x(4);
-         x(1)*x(4)^2 - mu/x(1)^2*(1-3/2*J2*(Re/x(1))^2) + T/m*(cos(alpha)*cos(x(2))+sin(alpha)*sin(x(2)));
-         -2*x(3)*x(4)/x(1) + T/m/x(1)*(sin(alpha)*cos(alpha)-cos(alpha)*sin(x(2)))]';
+         x(1)*x(4)^2-mu/x(1)^2*(1-3/2*J2*(Re/x(1))^2)+T/m*(cos(alpha)*cos(x(2))+sin(alpha)*sin(x(2)));
+         -2*x(3)*x(4)/x(1)+T/m/x(1)*(sin(alpha)*cos(alpha)-cos(alpha)*sin(x(2)))]';
 % Calculate jacobian matrix
 x = sym('x', [4, 1]);
 Ajaco = jacobian(f(x));
 
-% NOT FINISHED 
+% Measurement equation (h)
+h = @(x)[x(4);x(5)];
+% Calculate Jacobian matrix
+Hjaco1 = jacobian(h(x));
+Hjaco = [zeros(2,3) Hjaco1];
+
+for i = 1:500
+% f is the nonlinear state equations
+% Xplus is the state
+% Pplus is the covariance
+% h is the nonlinear measurement equation
+% y is the measurement
+% Q is the covariance of the process noise
+% R is the covariance of the measurement noise
+% Ajaco is the jacobian matrix of the state equations
+% Hjaco is the jacobian matrix of the measurement
+% equations
+[Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco);
+end
 
 %% Store Propagated Sigmas
 n = length(utCovars);
@@ -213,3 +231,27 @@ xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('Trajectory Error');
 set(gca,'gridlinestyle','--')
+
+% Estimate Xplus and Pplus
+function [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco)
+x = sym('x', [5, 1]);
+% Propagation equations
+% Xminus and Pminus are the propagated state and
+covariance
+Xminus = f(Xplus);
+% A is the Jacobian matrix at Xplus
+A = subs(Ajaco, x, Xplus);
+Pminus = A*Pplus*A'+Q;
+
+% hx is the predicted measurement
+hx = h(Xminus);
+% H is the Jacobian matrix at Xminus
+H = subs(Hjaco, x, Xminus);
+% Compute Kalman Gain
+L = Pminus*H'/(H*Pminus*H'+R);
+% Measurement Update equations
+% Xplus and Pplus are the updated state and
+covariance
+Xplus = Xminus + L*(y - hx);
+Pplus = Pminus - L*H*Pminus;
+end
