@@ -1,6 +1,6 @@
 clear all; close all; clc;
 global alpha g0 Isp T mu Re m J2
-alpha = 1*pi/180;          % thrust angle
+alpha = 0.5*pi/180;        % thrust angle
 J2    = 1.0826269e-3; 
 g0    = 9.82;              % gravitational acceleration, m/s^2
 Isp   = 1000;              % specific-impulse, s
@@ -87,11 +87,13 @@ x = sym('x', [4, 1]);
 Ajaco = jacobian(f(x));
 
 % Measurement equation (h)
-h = @(x)[x(4);x(5)];
+h = @(x)[x(1);x(3)];
 % Calculate Jacobian matrix
 Hjaco1 = jacobian(h(x));
-Hjaco = [zeros(2,3) Hjaco1];
-
+Hjaco = [zeros(2,2) Hjaco1];
+y = 0;
+Q = eye(4)*q;
+R = eye(2)*r;
 for i = 1:500
 % f is the nonlinear state equations
 % Xplus is the state
@@ -234,11 +236,11 @@ set(gca,'gridlinestyle','--')
 
 % Estimate Xplus and Pplus
 function [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco)
-x = sym('x', [5, 1]);
+x = sym('x', [4, 1]);
 % Propagation equations
 % Xminus and Pminus are the propagated state and
-covariance
-Xminus = f(Xplus);
+% covariance
+Xminus = f(Xplus)';
 % A is the Jacobian matrix at Xplus
 A = subs(Ajaco, x, Xplus);
 Pminus = A*Pplus*A'+Q;
@@ -251,7 +253,7 @@ H = subs(Hjaco, x, Xminus);
 L = Pminus*H'/(H*Pminus*H'+R);
 % Measurement Update equations
 % Xplus and Pplus are the updated state and
-covariance
+% covariance
 Xplus = Xminus + L*(y - hx);
 Pplus = Pminus - L*H*Pminus;
 end

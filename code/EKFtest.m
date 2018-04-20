@@ -24,6 +24,9 @@ h = @(x)[x(4);x(5)];
 % Calculate Jacobian matrix
 Hjaco1 = jacobian(h(x));
 Hjaco = [zeros(2,3) Hjaco1];
+y = 0;
+Q = eye(5)*q;
+R = eye(2)*r;
 
 for i = 1:500
 % f is the nonlinear state equations
@@ -44,7 +47,7 @@ function [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco)
 x = sym('x', [5, 1]);
 % Propagation equations
 % Xminus and Pminus are the propagated state and
-covariance
+% covariance
 Xminus = f(Xplus);
 % A is the Jacobian matrix at Xplus
 A = subs(Ajaco, x, Xplus);
@@ -58,7 +61,7 @@ H = subs(Hjaco, x, Xminus);
 L = Pminus*H'/(H*Pminus*H'+R);
 % Measurement Update equations
 % Xplus and Pplus are the updated state and
-covariance
+% covariance
 Xplus = Xminus + L*(y - hx);
 Pplus = Pminus - L*H*Pminus;
 end
