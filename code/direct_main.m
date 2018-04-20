@@ -131,6 +131,7 @@ r = sol.y(1,:);
 theta = sol.y(2,:);
 rdot = sol.y(3,:);
 thetadot = sol.y(4,:);
+tf = sol.parameters(1);
 
 figure();
 subplot(2,1,1);
@@ -140,6 +141,7 @@ ylabel('y');
 title('Position State Space');
 
 subplot(2,1,2);
-stairs((1:length(sol.control)) - 1, sol.control);
-xlabel('u');
+stairs(((1:length(sol.control)) - 1)/(length(sol.control)-1)*tf, sol.control);
+ylabel('$\gamma$','interpreter','latex');
+xlabel('Time');
 title('Control History');
