@@ -1,6 +1,5 @@
 clc; close all; clear variables;
-addpath('optim');
-
+addpath('..\optim');
 g = 10;
 
 options = optimset('Algorithm','sqp','display','off');
