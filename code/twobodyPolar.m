@@ -7,4 +7,6 @@ function X = twobodyPolar(X0, tspan, dt, Chaser, Cov, alpha, alpha_t)
 tol = 1e-10;
 options = odeset('RelTol',tol,'AbsTol',tol);
 odes = @(t, X) prop_estim_odes(t, X, Chaser, Cov, alpha, alpha_t);
-[~,X] = ode113(odes, [tspan(1):dt:tspan(2), tspan(2)], X0, options);
+sol = ode113(odes, tspan, X0, options);
+X = deval(sol, [tspan(1):dt:tspan(2), tspan(2)]).';
+% [~,X] = ode113(odes, [tspan(1):dt:tspan(2), tspan(2)], X0, options);

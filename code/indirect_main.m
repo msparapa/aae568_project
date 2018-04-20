@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = true;        % whether or not to plot navigation results
+plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -26,7 +26,7 @@ sim_opt.estim = 'ekf';
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
 
-sim_opt.maxCount = 100;
+sim_opt.maxCount = 50;
 %% Define Dimensional Initial Conditions
 % Dimensional initial conditions
 T = 0.005605;             % Thrust, kN; TODO - DEFINE THIS
@@ -62,7 +62,7 @@ Nav.r = 1;
 Nav.theta = 0;
 Nav.rdot = 0;
 Nav.thetadot = 1;
-Nav.P = 1*1e-9*eye(4);                    % Initial Covariance to test EKF
+Nav.P = 1e-5*eye(4);                    % Initial Covariance to test EKF
 Nav.X_history = {};
 Nav.t_history = {};
 
@@ -95,7 +95,7 @@ switch(sim_opt.estim)
     case 'ut'
         % Some arbitrary covariance matrix
         P0 = rand(4);
-        P0 = P0*P0.' * 1e-9;        % Use small values to avoid larger errors that crash the Chaser into Earth
+        P0 = P0*P0.' * 1e-5;        % Use small values to avoid larger errors that crash the Chaser into Earth
         Cov.P0 = P0;
         Cov.alpha = 1;
         Cov.beta = 2.0;
@@ -207,9 +207,12 @@ while(~gameover && count < sim_opt.maxCount)
             Nav.X_history{end+1} = intMeans;
             Nav.t_history{end+1} = [t_now:Cov.dt:t_seg, t_seg];
             
+%             if(count == 28)
+%                 keyboard;
+%             end
             % Store propagated Sigmas
-            storeCov = zeros(length(intCovars),4);
-            for i = 1:length(intCovars)
+            storeCov = zeros(size(intCovars,3),4);
+            for i = 1:size(intCovars,3)
                 storeCov(i,:) = sqrt(diag(intCovars(1:4,1:4,i)));
             end
     end
@@ -311,8 +314,7 @@ while(~gameover && count < sim_opt.maxCount)
     
     fprintf('Covariance Matrix:\n'); disp(Nav.P);
     
-%     [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
-    if(det(Nav.P) > 0)
+    if(max(abs(eig(Nav.P))) > 0)
         [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
         gameover = bInPos && bInVel;
     else

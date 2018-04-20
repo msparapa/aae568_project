@@ -80,7 +80,7 @@ end
 [Chi,Wm,Wc] = getUTSigmaPts_SR( s0, cholCov, Cov );
 
 %  Map the sigma points through the input funcion
-statesOut = zeros(size(Chi,1),size(Chi,2), floor((t_seg - t_now)/Cov.dt) + 2);
+statesOut = zeros(size(Chi,1),size(Chi,2), length([t_now:Cov.dt:t_seg, t_seg]));
 for i = 1:size(Chi,2)
     f = twobodyPolar(Chi(:,i), [t_now, t_seg], Cov.dt, Chaser,...
         Cov, alpha, alpha_t);
