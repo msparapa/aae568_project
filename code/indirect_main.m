@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = false;        % whether or not to plot navigation results
+plot_opt.nav = true;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -144,7 +144,7 @@ end
 % Begin Mission Loop
 gameover = false;
 count = 0;
-maxCount = 25;
+maxCount = 200;
 while(~gameover && count < maxCount)
     fprintf('******************\nIteration %02d\n******************\n',...
         count);
