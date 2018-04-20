@@ -66,18 +66,27 @@ options = struct; options.alpha = 1; options.beta = 2.0;
 
 % Propagate all sigma points until time of measurement
 [utMeans,utCovars,utSigmaPoints,Wm,Wc] = prop_UT( s0, C, options, 9, revs*P, dt);
-t1 = 0; t2 = dt;
-n = revs*P/dt;
-ukfMeans = zeros(n,4);
-ukfCovars = zeros(4,4,n);
-inMean = s0(1:4); inCov = C(1:4,1:4);
-for s = 1:n
-    [f,Cov] = twobodyPolarEKF(inMean,inCov,0,[t1 t2],dt);
-    ukfMeans(s,:) = f;
-    ukfCovars(:,:,s) = Cov;
-    t1 = t1 + dt; t2 = t2 + dt;
-    inMean = f; inCov = Cov;
-end
+
+%% From Hwang's Lecture Notes
+% Variances of the process and measurement noise
+% (wk and vk)
+q = 0.001*0.001;
+r = 0.01*0.01;
+% Sampling interval
+T = 0.02;
+% Initial values of the state and covariance
+Xplus = s0(1:4); %[0; 0; 0; 130/3.6; 0.01];
+Pplus = eye(4);
+% Nonlinear state equation (f) 
+f = @(x)[x(3);
+         x(4);
+         x(1)*x(4)^2 - mu/x(1)^2*(1-3/2*J2*(Re/x(1))^2) + T/m*(cos(alpha)*cos(x(2))+sin(alpha)*sin(x(2)));
+         -2*x(3)*x(4)/x(1) + T/m/x(1)*(sin(alpha)*cos(alpha)-cos(alpha)*sin(x(2)))]';
+% Calculate jacobian matrix
+x = sym('x', [4, 1]);
+Ajaco = jacobian(f(x));
+
+% NOT FINISHED 
 
 %% Store Propagated Sigmas
 n = length(utCovars);
