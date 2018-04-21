@@ -1,4 +1,4 @@
-function [x_update,cov_update] = EnKF(h,x_initial,w,z,obs,num_iterations) 
+function [x_update,cov_update,meas] = EnKF(h,x_initial,w,z,obs,num_iterations) 
 
 [~,num_members]     = size(x_initial);
 p1                  = size(x_initial,1);

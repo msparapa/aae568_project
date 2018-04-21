@@ -44,7 +44,7 @@ for i = 1:n
 % Ajaco is the jacobian matrix of the state equations
 % Hjaco is the jacobian matrix of the measurement
 % equations
-y = f(Xplus); y = y(4:5,1)+rand(2,1);
+y = f(Xplus); y = y(4:5,1)+(-1 + (1+1)*rand(2,1));
 [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco);
 storeXplus(:,i) = Xplus;
 storey(:,i) = y;
@@ -52,7 +52,7 @@ storePplus(:,:,i) = Pplus;
 display(i)
 end
 
-t = linspace(1,20,20);
+t = linspace(1,n,n);
 figure(); plot(t, storeXplus(4,:),'g--'); grid on; hold on;
 plot(t,storey(1,:),'rx'); 
 

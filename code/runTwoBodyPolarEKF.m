@@ -1,6 +1,6 @@
 clear all; close all; clc;
 global alpha g0 Isp T mu Re m J2
-alpha = 0.5*pi/180;        % thrust angle
+alpha = 0;                 % thrust angle
 J2    = 1.0826269e-3; 
 g0    = 9.82;              % gravitational acceleration, m/s^2
 Isp   = 1000;              % specific-impulse, s
@@ -14,44 +14,42 @@ P     = 2*pi*sqrt(a^3/mu); % orbit period, s
 w     = 2*pi/P;            % orbit angular velocity, rad/s
 dt    = 60;                % propagation step-size
 revs  = 4;                 % revs to propagate
-N     = 100;                % number of measurements 
+N     = 3;                 % number of measurements 
 
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
 mdot  = -T/Isp/g0;         % mass flow rate
 q     = 0.00;              % std dev 
-x0    = [a;0;0;w;mdot];    % initial state 
-s0    = [x0(1:4)+q*...     % initial state with noise
-         randn(4,1);x0(5)];    
-f     = twobodyPolarUT(x0,[0 revs*P],dt);
-fTot  = twobodyPolarUT(x0,[0 2*revs*P+dt],dt);
-meas  = twobodyPolarUT(f(end,:)',[0 N*dt],dt);
+x0    = [a;0;0;w];         % initial state 
+% s0    = [x0+q*randn(4,1)]; % initial state with noise
+             
+f     = twobodyPolar(x0,[0 revs*P],dt);
+fTot  = twobodyPolar(x0,[0 2*revs*P+dt],dt);
+meas  = twobodyPolar(f(end,:)',[0 N*dt],dt);
 meas  = [meas(1:N,1),meas(1:N,3)];
 
 % Plot the true orbit
 figure(); polar(f(:,2),f(:,1),'b-'); grid on; hold on;
 
 %% Some abitrary covariance matrix 
-C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10  -2.2077e-14
-     -5.0018e-09   1.0026e-09   7.1661e-09  -7.3595e-14  -5.0066e-17
-     -1.4306e-05   7.1661e-09   8.4438e-07   4.3113e-12   1.4098e-16
-     -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16   8.5570e-21
-     -2.2077e-14  -5.0066e-17   1.4098e-16   8.5570e-21   6.0000e-24];
+C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
+     -5.0018e-09   1.0026e-09   7.1661e-09  -7.3595e-14;
+     -1.4306e-05   7.1661e-09   8.4438e-07   4.3113e-12;
+     -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16];
 
 % Scale the Covariance up 
 sf = 1;
 sfMatrix = [
-        sf   0     0     0    0;
-         0   sf    0     0    0;
-         0    0   sf     0    0;
-         0    0    0    sf    0;
-         0    0    0     0   sf];
+        sf   0     0     0;
+         0   sf    0     0;
+         0    0   sf     0;
+         0    0    0    sf];
 C = sfMatrix*C*transpose(sfMatrix);
 
 % Draw a random sample from the scaled covariance and set this to your
 % initial seed
 nSamples  = 1;
-s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(5,nSamples);
+s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(4,nSamples);
  
 % Arbitrary sigmas 
 % rSig    = 1e-10;
@@ -81,7 +79,7 @@ Pplus = eye(4);
 f = @(x)[x(3);
          x(4);
          x(1)*x(4)^2-mu/x(1)^2*(1-3/2*J2*(Re/x(1))^2)+T/m*(cos(alpha)*cos(x(2))+sin(alpha)*sin(x(2)));
-         -2*x(3)*x(4)/x(1)+T/m/x(1)*(sin(alpha)*cos(alpha)-cos(alpha)*sin(x(2)))]';
+         -2*x(3)*x(4)/x(1)+T/m/x(1)*(sin(alpha)*cos(alpha)-cos(alpha)*sin(x(2)))];
 % Calculate jacobian matrix
 x = sym('x', [4, 1]);
 Ajaco = jacobian(f(x));
@@ -90,11 +88,16 @@ Ajaco = jacobian(f(x));
 h = @(x)[x(1);x(3)];
 % Calculate Jacobian matrix
 Hjaco1 = jacobian(h(x));
-Hjaco = [zeros(2,2) Hjaco1];
+Hjaco = [Hjaco1(:,1) zeros(2,1) Hjaco1(:,2) zeros(2,1)];
 y = 0;
 Q = eye(4)*q;
 R = eye(2)*r;
-for i = 1:500
+
+storeXplus = zeros(4,N);
+storey = zeros(2,N);
+storePplus = zeros(4,4,N);
+
+for i = 1:N
 % f is the nonlinear state equations
 % Xplus is the state
 % Pplus is the covariance
@@ -105,8 +108,17 @@ for i = 1:500
 % Ajaco is the jacobian matrix of the state equations
 % Hjaco is the jacobian matrix of the measurement
 % equations
+y = meas(N,:)'+(-1 + (1+1)*rand(2,1));
 [Xplus, Pplus] = ekf(f,h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco);
+storeXplus(:,i) = Xplus;
+storey(:,i) = y;
+storePplus(:,:,i) = Pplus;
+display(i)
 end
+
+t = linspace(1,N,N);
+figure(); plot(t, storeXplus(1,:),'g--'); grid on; hold on;
+plot(t,storey(1,:),'rx'); 
 
 %% Store Propagated Sigmas
 n = length(utCovars);
@@ -240,7 +252,7 @@ x = sym('x', [4, 1]);
 % Propagation equations
 % Xminus and Pminus are the propagated state and
 % covariance
-Xminus = f(Xplus)';
+Xminus = f(Xplus);
 % A is the Jacobian matrix at Xplus
 A = subs(Ajaco, x, Xplus);
 Pminus = A*Pplus*A'+Q;

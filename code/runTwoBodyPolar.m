@@ -14,7 +14,7 @@ P     = 2*pi*sqrt(a^3/mu); % orbit period, s
 w     = 2*pi/P;            % orbit angular velocity, rad/s
 dt    = 60;                % propagation step-size
 revs  = 4;                 % revs to propagate
-N     = 100;                 % number of measurements 
+N     = 100;               % number of measurements 
 
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
@@ -37,7 +37,7 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
      -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16];
 
 % Scale the Covariance up 
-sf = 10;
+sf = 100;
 sfMatrix = [
         sf   0     0     0;
          0   sf    0     0;
@@ -85,8 +85,8 @@ for k = 1:N
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
     num_iterations            = 1;
     [x_update,Post_P,devMeas] = ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
-%     [x_update,postUpdateCov]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
-    [meanOut,covarOut,sigmaPointsOut,~,~] = prop_UT( mean(x_update,2), Post_P, options, 9, dt,dt/dt);  % Propagate measurement update to next time step
+%     [x_update,Post_P,devMeas]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
+    [meanOut,covarOut,sigmaPointsOut,Wm,Wc] = prop_UT( mean(x_update,2), Post_P, options, 9, dt,dt/dt);  % Propagate measurement update to next time step
     ukfMean                   = meanOut(end,:)';
     ukfCovar                  = covarOut(:,:,end);
     ukfSigmaPoints            = sigmaPointsOut(:,:,end);
@@ -103,11 +103,13 @@ ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2); plot(numMeas,estMeans(:,2),'b--'); hold on; plot(numMeas,true(1:N,2),'r-'); grid on;
 ylabel('$\theta$, m/sec','Interpreter','latex')
 subplot(4,1,3); plot(numMeas,estMeans(:,3),'b--'); hold on; plot(numMeas,true(1:N,3),'r-'); hold on; plot(numMeas,storeObs(:,2),'gx'); grid on;
-ylabel('$\dot{r}$, deg','Interpreter','latex')
+ylabel('$\dot{r}$, m/s','Interpreter','latex')
 subplot(4,1,4); plot(numMeas,estMeans(:,4),'b--'); hold on; plot(numMeas,true(1:N,4),'r-'); grid on;
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
+xlabel('Number of Measurements','Interpreter','latex')
 subplot(4,1,1); title('Estimation Accuracy','Interpreter','latex')
 
+% Post-Fit Residuals
 rResid    = storeObs(:,1) - estMeans(:,1);
 rDotResid = storeObs(:,2) - estMeans(:,3);
 
@@ -115,8 +117,27 @@ figure();
 subplot(2,1,1); plot(numMeas,rResid,'bx'); grid on;
 ylabel('$r$, m','Interpreter','latex')
 subplot(2,1,2); plot(numMeas,rDotResid,'bx'); grid on;
-ylabel('$\dot{r}$, deg','Interpreter','latex')
+ylabel('$\dot{r}$, m/s','Interpreter','latex')
+xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Observation Residuals','Interpreter','latex')
+
+% Mean Square Error Plots
+storeMSE    = zeros(N,2); 
+rResidSq    = rResid.^2;
+rDotResidSq = rDotResid.^2;
+for i = 1:N
+    rMSE = sum(rResidSq(1:i))/i;
+    rDotMSE = sum(rDotResidSq(1:i))/i;
+    storeMSE(i,:) = [rMSE;rDotMSE];
+end
+
+figure(); 
+subplot(2,1,1); plot(numMeas,storeMSE(:,1),'k-'); grid on;
+ylabel('$r$, m','Interpreter','latex')
+subplot(2,1,2); plot(numMeas,storeMSE(:,2),'k-'); grid on;
+ylabel('$\dot{r}$, m/s','Interpreter','latex')
+xlabel('Number of Measurements','Interpreter','latex')
+subplot(2,1,1); title('Mean Squared Error','Interpreter','latex')
 
 %% Propagate after update
 % Propagate all sigma points 
