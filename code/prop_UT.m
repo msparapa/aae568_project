@@ -80,8 +80,8 @@ for i = 1:size(Chi,2)
 end
 
 n = t/dt+1;
-intMeans = zeros(n,5);
-intCovars = zeros(5,5,n);
+intMeans = zeros(n,4);
+intCovars = zeros(4,4,n);
 for h = 1:n
     
     stateOut = statesOut(:,:,h);
