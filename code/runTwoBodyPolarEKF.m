@@ -16,9 +16,11 @@ dt    = 60;                % propagation step-size
 revs  = 4;                 % revs to propagate
 N     = 100;               % number of measurements 
 q     = 0.01*0.01;         % variance of the process noise
+rSig  = 5;                 % r sigma 
+rdSig = 5e-3;              % rDot sigma  
 r     = 0.1*0.1;           % variance of the measurement noise
 Q     = eye(4)*q;          % process noise covariance matrix 
-R     = eye(2)*r;          % measurement noise covariance matrix
+R     = [rSig 0;0 rdSig];  % measurement noise covariance matrix
 h     = @(j) updatePolarMeasurement(j);
 
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
@@ -56,7 +58,7 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
      -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16];
 
 % Scale the Covariance up 
-sf = 500;
+sf = 50;
 sfMatrix = [
         sf   0     0     0;
          0   sf    0     0;
@@ -125,11 +127,10 @@ Xplus          = ekfMeans(end,:)';
 Pplus          = ekfCovars(:,:,end);
 for k = 1:N
     truObs                    = meas(k,:)';                     % extract observation at Nth step 
-    z                         = [5;5e-3];                       % measurement noise (a noisier measurement is less trustworthy)
-    w                         = 0;                              % process noise standard deviation
+    z                         = [rSig;rdSig];                   % measurement noise (a noisier measurement is less trustworthy)
     obs                       = [truObs(1,1);truObs(2,1)];      % single [r,rhoDot] measurement
     num_iterations            = 1;
-    [Xout,Pout,devMeas]       = ukf(h,ukfSigmaPoints,ukfCovar,w,z,obs,num_iterations,Wm,Wc);
+    [Xout,Pout,devMeas]       = ukf(h,ukfSigmaPoints,ukfCovar,0,z,obs,num_iterations,Wm,Wc);
 %     [x_update,Post_P,devMeas]  = EnKF(h,ukfSigmaPoints,w,z,obs,num_iterations);
     [meanOut,covarOut,sigmaPointsOut,Wm,Wc] = prop_UT( mean(Xout,2), Pout, options, 9, dt,dt/dt);  % Propagate measurement update to next time step
     ukfMean                   = meanOut(end,:)';
