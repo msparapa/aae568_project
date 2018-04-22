@@ -3,7 +3,7 @@ function [Xplus, Pplus] = ekf(h,Xplus,Pplus,y,Q,R,Ajaco,Hjaco)
 % Propagation equations
 % Xminus and Pminus are the propagated state and
 % covariance
-Xminus = twobodyPolarEKF(Xplus,[0 60],60);
+Xminus = twobodyPolarEKF(Xplus,[0 60],1);
 % A is the Jacobian matrix at Xplus
 % A = subs(Ajaco, x, Xplus);
 Pminus = Ajaco*Pplus*Ajaco'+Q;
