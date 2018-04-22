@@ -15,9 +15,8 @@ dt    = 60;                % propagation step-size
 revs  = 4;                 % revs to propagate
 N     = 100;               % number of measurements 
 q     = 0.01*0.01;         % variance of the process noise
-rS    = 5;                 % r sigma 
-rdS   = 5e-3;              % rDot sigma  
-r     = 0.1*0.1;           % variance of the measurement noise
+rS    = 5;                 % variance of range measurement noise
+rdS   = 5e-3;              % variance of range rate measurement noise
 Q     = eye(4)*q;          % process noise covariance matrix 
 R     = [rS^2 0;0 rdS^2];  % measurement noise covariance matrix
 h     = @(j) updatePolarMeasurement(j);
@@ -40,7 +39,6 @@ fTot  = twobodyPolar(x0,[0 2*revs*P+dt],dt);
 % Take measurements from the true trajectory during measurement period,
 % we'll perturb these later before they go into the update equations
 meas  = [true(1:N,1),true(1:N,3)];
-% meas  = [fTot(456:556,1),fTot(456:556,3)]; 
 
 % Plot the true orbit
 p1 = polar(fTot(:,2),fTot(:,1),'k-'); hold on; 
@@ -183,7 +181,7 @@ ylabel('$r$, m','Interpreter','latex')
 subplot(2,1,2); plot(numMeas,rDotResidUkf,'bx'); grid on;
 ylabel('$\dot{r}$, m/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
-subplot(2,1,1); title('Ukf Observation Residuals','Interpreter','latex')
+subplot(2,1,1); title('Ukf Observation Post-Fit Residuals','Interpreter','latex')
 
 figure(); 
 subplot(2,1,1); plot(numMeas,rResidEkf,'bx'); grid on;
@@ -191,7 +189,7 @@ ylabel('$r$, m','Interpreter','latex')
 subplot(2,1,2); plot(numMeas,rDotResidEkf,'bx'); grid on;
 ylabel('$\dot{r}$, m/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
-subplot(2,1,1); title('Ekf Observation Residuals','Interpreter','latex')
+subplot(2,1,1); title('Ekf Observation Post-Fit Residuals','Interpreter','latex')
 
 % Mean Square Error Plots
 storeUkfMSE = zeros(N,2); 
@@ -222,7 +220,7 @@ legend('UT/UKF','EKF')
 
 %% Propagate after update
 % Propagate all sigma points 
-[utMeansNew,utCovarsNew,utSigmaPointsNew,Wm,Wc] = prop_UT( ukfMean, ukfCovar, options, 9, revs*P-dt*N,dt);
+[utMeansNew,utCovarsNew,utSigmaPointsNew,Wm,Wc] = prop_UT( ukfMean, ukfCovar, options, 9, revs*P-dt*N+dt,dt);
 n = length(utMeansNew); 
 ekfMeansNew  = zeros(n,4);
 ekfCovarsNew = zeros(4,4,n); 
@@ -232,9 +230,18 @@ for k = 1:n
     ekfCovarsNew(:,:,k) = Pplus;
 end
 
-% Append trajectory during estimation to propagated trajectory 
-utMeansNew   = [estUkfMeans;utMeansNew];
-ekfMeansNew  = [estEkfMeans;ekfMeansNew];
+% Append all portions of the trajectory together (for the posterior UT
+% trajectory we are taking out the first point because it is the same as
+% the last estimate; for the posterior EKF trajectory we are taking out the
+% final point because we propagated for the length of the UT trajectory;
+% point is the EKF returns the state AFTER the last measurement where as
+% the UT returns the state AT the last measurement)
+utMeansNew   = [utMeans;estUkfMeans;utMeansNew(2:end,:)];
+ekfMeansNew  = [ekfMeans;estEkfMeans;ekfMeansNew(1:end-1,:)];
+timeline     = linspace(1,714,714);
+
+utCovarsNew = utCovarsNew(:,:,2:end);
+ekfCovarsNew = ekfCovarsNew(:,:,1:end-1);
 
 %% Store Propagated Sigmas
 l = length(utCovarsNew);
@@ -282,49 +289,48 @@ figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],utMeans(:,1)/1e3,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],utMeansNew(:,1)/1e3,'b-'); hold on;
+plot(timeline*60/3600,utMeansNew(:,1)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
 ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
+plot(timeline*60/3600,mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
 plot([0 t/3600],utMeans(:,3)/1e3,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],utMeansNew(:,3)/1e3,'b-'); hold on;
+plot(timeline*60/3600,utMeansNew(:,3)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
 ylabel('$\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],utMeans(:,4)*180/pi,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],utMeansNew(:,4)*180/pi,'b-'); hold on;
+plot(timeline*60/3600,utMeansNew(:,4)*180/pi,'b-'); hold on;
 plot([0 t3/3600],fTot(:,4)*180/pi, 'r--');
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('UT/UKF Trajectory','Interpreter','latex');
-legend('Traj Prior to Update','Traj After Update','True Traj');
+legend('Apriori','Aposterior','True Traj');
 set(gca,'gridlinestyle','--')
 
-% Residuals 
-PredTraj = [utMeans; utMeansNew]; % Predicted Trajectory
-Diff = PredTraj - fTot;
+% Difference between UT/UKF and true trajectory 
+Diff = utMeansNew - fTot;
 
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t3/3600],Diff(:,1)*1e3, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,1)*1e3, 'r-'); grid on
 ylabel('$\Delta r$, m','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t3/3600],Diff(:,2)*180/pi, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,2)*180/pi, 'r-'); grid on
 ylabel('$\Delta\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t3/3600],Diff(:,3)*1e3, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,3)*1e3, 'r-'); grid on
 ylabel('$\Delta\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,4)
-plot([0 t3/3600],Diff(:,4)*180/pi, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,4)*180/pi, 'r-'); grid on
 ylabel('$\Delta\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
@@ -359,49 +365,48 @@ figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],ekfMeans(:,1)/1e3,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],ekfMeansNew(:,1)/1e3,'b-'); hold on;
+plot(timeline*60/3600,ekfMeansNew(:,1)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
 ylabel('$r$, m','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(ekfMeans(:,2)*180/pi,360),'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],mod(ekfMeansNew(:,2)*180/pi,360),'b-'); hold on;
+plot(timeline*60/3600,mod(ekfMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
 plot([0 t/3600],ekfMeans(:,3)/1e3,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],ekfMeansNew(:,3)/1e3,'b-'); hold on;
+plot(timeline*60/3600,ekfMeansNew(:,3)/1e3,'b-'); hold on;
 plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
 ylabel('$\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],ekfMeans(:,4)*180/pi,'g-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],ekfMeansNew(:,4)*180/pi,'b-'); hold on;
+plot(timeline*60/3600,ekfMeansNew(:,4)*180/pi,'b-'); hold on;
 plot([0 t3/3600],fTot(:,4)*180/pi, 'r--');
 ylabel('$\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
 title('EKF Trajectory','Interpreter','latex');
-legend('Traj Prior to Update','Traj After Update','True Traj');
+legend('Propagated Traj','True Traj');
 set(gca,'gridlinestyle','--')
 
-% Residuals 
-PredTraj = [ekfMeans; ekfMeansNew]; % Predicted Trajectory
-Diff = PredTraj - fTot;
+% Difference between EKF and true trajectory 
+Diff = ekfMeansNew - fTot;
 
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t3/3600],Diff(:,1)*1e3, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,1)*1e3, 'r-'); grid on
 ylabel('$\Delta r$, m','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t3/3600],Diff(:,2)*180/pi, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,2)*180/pi, 'r-'); grid on
 ylabel('$\Delta\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t3/3600],Diff(:,3)*1e3, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,3)*1e3, 'r-'); grid on
 ylabel('$\Delta\dot{r}$, m/sec','Interpreter','latex')
 subplot(4,1,4)
-plot([0 t3/3600],Diff(:,4)*180/pi, 'r-'); grid on
+plot(timeline*60/3600,Diff(:,4)*180/pi, 'r-'); grid on
 ylabel('$\Delta\dot{\theta}$, deg/sec','Interpreter','latex')
 xlabel('\fontname{Times New Roman} Length of Propagation, hr');
 subplot(4,1,1)
