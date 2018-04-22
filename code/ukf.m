@@ -19,8 +19,11 @@ for i = 1:num_iterations
      Z(:,j)          = z.*randn(m1,1);       % Measurement Noise           
      
      % Forecast Step
-     forecastState   = x_estimate(:,j) + W;  % Replaced with already propagated sigma points                          
-     meas            = obs + Z(:,j);         % 2-dimensional [r,rDot] vector                   
+     forecastState   = x_estimate(:,j) + W;  % Replaced with already propagated sigma points
+     % Draw a random sample from the measurement covariance and set this to
+     % your measurement
+     meas            = repmat(obs,1,1) + chol(Zcov,'lower')*randn(2,1);
+%      meas            = obs + Z(:,j);         % 2-dimensional [r,rDot] vector
      forecastMeas    = h(forecastState)';    % Mapping from measurement space to dynamics space (which is the same in our case)        
       
      % Store estimates and measurements
