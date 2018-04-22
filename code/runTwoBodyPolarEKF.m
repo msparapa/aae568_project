@@ -56,7 +56,7 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
      -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16];
 
 % Scale the Covariance up 
-sf = 50;
+sf = 500;
 sfMatrix = [
         sf   0     0     0;
          0   sf    0     0;
@@ -67,15 +67,15 @@ C = sfMatrix*C*transpose(sfMatrix);
 % Draw a random sample from the scaled covariance and set this to your
 % initial seed
 nSamples  = 1;
-% s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(4,nSamples);
-s0 = x0;
+s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(4,nSamples);
+% s0 = x0;
 
 % Arbitrary sigmas 
-rSig    = 1e-10;
-tSig    = 1e-10;
-rDotSig = 1e-12;
-tDotSig = 1e-12;
-C = [rSig 0 0 0;0 tSig 0 0;0 0 rDotSig 0;0 0 0 tDotSig];
+% rSig    = 1e-10;
+% tSig    = 1e-10;
+% rDotSig = 1e-12;
+% tDotSig = 1e-12;
+% C = [rSig 0 0 0;0 tSig 0 0;0 0 rDotSig 0;0 0 0 tDotSig];
 
 %% Setup the Unscented Transform Options
 options = struct; options.alpha = 1; options.beta = 2.0;  
@@ -216,6 +216,7 @@ subplot(2,1,2); plot(numMeas,storeEkfMSE(:,2),'b-'); grid on;
 ylabel('$\dot{r}$, m/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Mean Squared Error','Interpreter','latex')
+legend('UT/UKF','EKF')
 
 %% Propagate after update
 % Propagate all sigma points 
