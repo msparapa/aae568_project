@@ -17,23 +17,37 @@ revs  = 4;                 % revs to propagate
 N     = 100;               % number of measurements 
 q     = 0.01*0.01;         % variance of the process noise
 r     = 0.1*0.1;           % variance of the measurement noise
-Q     = eye(4)*q;
-R     = eye(2)*r;
+Q     = eye(4)*q;          % process noise covariance matrix 
+R     = eye(2)*r;          % measurement noise covariance matrix
 h     = @(j) updatePolarMeasurement(j);
 
 P     = floor(P/60)*60;    % even out propagation duration (for storing information)
 
-mdot  = -T/Isp/g0;         % mass flow rate
-q     = 0.10;              % std dev 
+mdot  = -T/Isp/g0;         % mass flow rate  
 x0    = [a;0;0;w];         % initial state 
-% s0    = x0+q*randn(4,1);   % initial state with noise     
+
+% Propagate for n revs 
 f     = twobodyPolar(x0,[0 revs*P],dt);
-fTot  = twobodyPolar(x0,[0 2*revs*P+dt],dt);
+
+% Propagate the trajectory after n revs for N*dt seconds to simulate
+% measurement period
 true  = twobodyPolar(f(end,:)',[0 N*dt],dt);
+
+% Take measurements from the true trajectory during measurement period,
+% we'll perturb these later before they go into the update equations
 meas  = [true(1:N,1),true(1:N,3)];
 
+% Propagate the entire trajectory for comparison against updated trajectory
+fTot  = twobodyPolar(x0,[0 2*revs*P+dt],dt);
+
 % Plot the true orbit
-polar(f(:,2),f(:,1),'b-'); grid on; hold on;
+polar(fTot(:,2),fTot(:,1),'k-'); hold on; 
+polar(fTot(1,2),fTot(1,1),'kd'); hold on;
+polar(fTot(end,2),fTot(end,1),'ko');
+grid on; hold on; hold on;
+polar(f(:,2),f(:,1),'b--'); hold on; 
+polar(f(1,2),f(1,1),'bd'); hold on;
+polar(f(end,2),f(end,1),'bo'); hold on;
 
 %% Some abitrary covariance matrix 
 C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
@@ -53,33 +67,42 @@ C = sfMatrix*C*transpose(sfMatrix);
 % Draw a random sample from the scaled covariance and set this to your
 % initial seed
 nSamples  = 1;
-s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(4,nSamples);
- 
+% s0 = repmat(x0,1,nSamples) + chol(C,'lower')*randn(4,nSamples);
+s0 = x0;
+
 % Arbitrary sigmas 
-% rSig    = 1e-10;
-% tSig    = 1e-10;
-% rDotSig = 1e-12;
-% tDotSig = 1e-12;
-% mDotSig = 1e-20;
-% C = [rSig 0 0 0 0;0 tSig 0 0 0;0 0 rDotSig 0 0;0 0 0 tDotSig 0;0 0 0 0 mDotSig];
+rSig    = 1e-10;
+tSig    = 1e-10;
+rDotSig = 1e-12;
+tDotSig = 1e-12;
+C = [rSig 0 0 0;0 tSig 0 0;0 0 rDotSig 0;0 0 0 tDotSig];
 
 %% Setup the Unscented Transform Options
 options = struct; options.alpha = 1; options.beta = 2.0;  
 
 % Propagate all sigma points until time of measurement
 [utMeans,utCovars,utSigmaPoints,Wm,Wc] = prop_UT( s0, C, options, 9, revs*P, dt);
+
+polar(utMeans(:,2),utMeans(:,1),'m--'); hold on; 
+polar(utMeans(1,2),utMeans(1,1),'md'); hold on;
+polar(utMeans(end,2),utMeans(end,1),'mo');
+
+% Propagate trajectory using EKF equations 
 Xplus = s0; Pplus = C; y = 0;
 n = length(utMeans); 
 ekfMeans  = zeros(n,4);
 ekfCovars = zeros(4,4,n); 
-for k = 1:n
-    [A, C]           = jacob(Xplus);
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R,A,C);
+ekfMeans(1,:) = Xplus;
+ekfCovars(:,:,1) = Pplus;
+for k = 2:n
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R);
     ekfMeans(k,:)    = Xplus;
     ekfCovars(:,:,k) = Pplus;
 end
 
-polar(ekfMeans(:,2),ekfMeans(:,1),'r-'); grid on;
+polar(ekfMeans(:,2),ekfMeans(:,1),'c--'); hold on; 
+polar(ekfMeans(1,2),ekfMeans(1,1),'cd'); hold on;
+polar(ekfMeans(end,2),ekfMeans(end,1),'co');
 
 %% Store Propagated Sigmas
 n = length(utCovars);
@@ -115,8 +138,7 @@ for k = 1:N
     estUkfMeans(k,:)          = ukfMean;
     estUkfCovars(:,:,k)       = ukfCovar;
     storeObs(k,:)             = devMeas;    
-    [A, C]                    = jacob(Xplus);
-    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,Q,0,A,C);
+    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,Q,R);
     estEkfMeans(k,:)          = Xplus;
     estEkfCovars(:,:,k)       = Pplus;
 end
@@ -202,8 +224,7 @@ n = length(utMeansNew);
 ekfMeansNew  = zeros(n,4);
 ekfCovarsNew = zeros(4,4,n); 
 for k = 1:n
-    [A, C]           = jacob(Xplus);
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R,A,C);
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R);
     ekfMeansNew(k,:)    = Xplus;
     ekfCovarsNew(:,:,k) = Pplus;
 end
