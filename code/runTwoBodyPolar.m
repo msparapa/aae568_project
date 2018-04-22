@@ -208,11 +208,11 @@ for i = 1:N
 end
 
 figure(); 
-subplot(2,1,1); plot(numMeas,storeUkfMSE(:,1),'k-'); grid on; hold on
-subplot(2,1,1); plot(numMeas,storeEkfMSE(:,1),'b-'); grid on; hold on
+subplot(2,1,1); semilogy(numMeas,storeUkfMSE(:,1),'k-'); grid on; hold on
+subplot(2,1,1); semilogy(numMeas,storeEkfMSE(:,1),'b-'); grid on; hold on
 ylabel('$r$, m','Interpreter','latex')
-subplot(2,1,2); plot(numMeas,storeUkfMSE(:,2),'k-'); grid on; hold on
-subplot(2,1,2); plot(numMeas,storeEkfMSE(:,2),'b-'); grid on;
+subplot(2,1,2); semilogy(numMeas,storeUkfMSE(:,2),'k-'); grid on; hold on
+subplot(2,1,2); semilogy(numMeas,storeEkfMSE(:,2),'b-'); grid on;
 ylabel('$\dot{r}$, m/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Mean Squared Error','Interpreter','latex')
