@@ -1,11 +1,11 @@
 function dfdt = prop_UT_odes(~,f)
-global alpha mu m T J2 Re
+global alpha mu m T
 r         = f( 1);
 theta     = f( 2);
 rDot      = f( 3);
 thetaDot  = f( 4);
 
-rDotDot = r*thetaDot^2 - mu/r^2*(1-3/2*J2*(Re/r)^2) +...
+rDotDot = r*thetaDot^2 - mu/r^2 +...
     T/m*(cos(alpha)*cos(theta)+sin(alpha)*sin(theta));
 thetaDotDot = -2*rDot*thetaDot/r +...
     T/m/r*(sin(alpha)*cos(alpha)-cos(alpha)*sin(theta));

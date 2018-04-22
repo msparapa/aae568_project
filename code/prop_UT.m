@@ -79,6 +79,7 @@ for i = 1:size(Chi,2)
     statesOut(:,i,:) = transpose(f);
 end
 
+% Store the means and covars at each propagation time step
 n = t/dt+1;
 intMeans = zeros(n,4);
 intCovars = zeros(4,4,n);
