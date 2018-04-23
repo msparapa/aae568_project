@@ -180,6 +180,9 @@ while(~gameover && count < sim_opt.maxCount)
             end
             [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser,...
                 Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
+            if t_now == 0
+                tf_initial = tf;
+            end
     end
     
     
@@ -344,3 +347,6 @@ if(~plot_opt.nav)
     plot_opt.nav = true;
     checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
 end
+
+tf_delta = t_seg - tf_intial; % Actual final time - Original Opt Final Time
+fprintf('Time of Flight was %f above original optimal estimate\n', tf_delta);
