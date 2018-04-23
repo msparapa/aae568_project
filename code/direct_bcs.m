@@ -17,6 +17,6 @@ PSI = [X0(1) - Nav.r;
     Xf(2) - Target.thetadot0*(tf_rel+t0) - Target.theta0;
     Xf(3) - Target.rdot0;
     Xf(4) - Target.thetadot0;
-%     Yf(6) - Yf(5:8)'*dYf_dtf(1:4) - 1;
+%     Yf(6)*Target.thetadot0 - Yf(5:8)'*dYf_dtf(1:4) - 1;
     tf_rel - slack^2];
 return
