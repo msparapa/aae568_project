@@ -68,11 +68,6 @@ if norm(FVAL) > 1e-8
         @(X) indirect_fsolver(X, Chaser, Target, Nav, t0, yinit(1:4), Opt_sol),...
         ICsolver0, options);
     fprintf('\nfsolve |F| = %e\n',norm(FVAL));
-    fprintf('Computed non-optimal control for t = %f to %f\n', ...
-    t_now, t_seg);
-else
-    fprintf('Computed optimal control for t = %f to %f\n', ...
-    t_now, t_seg);
 end
 
 
@@ -88,6 +83,14 @@ odes_tf = @(t, X) indirect_odes_tf(t, X, Chaser);
 i_ts_opt = find(alpha_t < t0 + Chaser.ts_opt, 1, 'last');
 t_seg = alpha_t(i_ts_opt);
 lambda_seg = X(i_ts_opt, 5:8).';
+
+if Opt_sol
+    fprintf('Computed optimal control for t = %f to %f\n', ...
+    t0, t_seg);
+else
+    fprintf('Computed non-optimal control for t = %f to %f\n', ...
+    t0, t_seg);
+end
 
 if plot_opt.indirect
 
