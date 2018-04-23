@@ -348,5 +348,5 @@ if(~plot_opt.nav)
     checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
 end
 
-tf_delta = t_seg - tf_intial; % Actual final time - Original Opt Final Time
+tf_delta = t_seg - tf_initial; % Actual final time - Original Opt Final Time
 fprintf('Time of Flight was %f above original optimal estimate\n', tf_delta);
