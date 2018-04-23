@@ -9,7 +9,7 @@ tf_rel = params(1);
 
 % dYf_dtf = direct_odes(0,Yf,tf_rel,Chaser)/tf_rel;
 
-PSI = [X0(1) - Nav.r;
+PSI = [(X0(1) - Nav.r)*2;
     X0(2) - Nav.theta;
     X0(3) - Nav.rdot;
     X0(4) - Nav.thetadot;

@@ -1,11 +1,11 @@
 function [alpha, alpha_t, tf, sol] = direct_fcn(Chaser,...
-    Target, Nav, t0, tf_rel_guess, solin)
+    Target, Nav, t0, tf_rel_guess, solin, N)
 
 yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
 ICsolver0 = [tf_rel_guess];
 
-options = optimset('Algorithm','sqp','display','off');
-options.Nodes = 60;
+options = optimset('Algorithm','sqp','display','off', 'TolFun', 1e-6);
+options.Nodes = N;
 
 T = linspace(0, 1, options.Nodes);
 solinit0 = bvpinit(T, yinit', ICsolver0);
@@ -19,10 +19,10 @@ if exist('solin')
     Tc = linspace(0,1,L);
     solinit0.control(1,:) = interp1(Tc,solin.control,solinit0.x);
 else
-    solinit0.control(1,:) = 0*linspace(0, 0, options.Nodes);
+    solinit0.control(1,:) = 0*linspace(1, 1, options.Nodes);
 end
 
-solinit0.control(1,:) = 0*linspace(0, 0, options.Nodes);
+solinit0.control(1,:) = 0*linspace(1, 1, options.Nodes);
 [T,X] = ode113(@(t,X)(direct_eoms(t, X, 0, solinit0.parameters, solinit0.consts)), T, yinit);
 % [T,X] = ode113(@(t,X)(indirect_odes(t, X, tf_rel_guess, Chaser)), T, [yinit; solin.lambda]); % indirect_odes(tau, X, tf_rel, Chaser)
 

@@ -119,6 +119,9 @@ count = 0;
 %   We won't necessarily use the entire optimal solution, just a
 %   section of it that corresponds to our flight time between
 %   observations
+
+node_cases = [30];
+
 switch(lower(sim_opt.optim))
     case 'direct'
         if(count > 0)
@@ -131,30 +134,58 @@ switch(lower(sim_opt.optim))
         end
         [alphatrue, alpha_ttrue, tftrue, t_segtrue, lambda_segtrue, plot_opt] = indirect_fcn(Chaser,...
                 Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
-        tf_rel_guess = tftrue;
+%         tf_rel_guess = tftrue;
         true_time = linspace(0,1,length(alphatrue))*tftrue;
         solin.control = alphatrue;
         solin.lambda = lambda_segtrue;
-        [alpha, alpha_t, tf, sol] = direct_fcn(Chaser, Target, Nav, t_now, tf_rel_guess, solin);
+        alpha = {};
+        alpha_t = {};
+        tf = {};
+        sol = {};
+        for ii = 1:length(node_cases)
+            [alpha{ii}, alpha_t{ii}, tf{ii}, sol{ii}] = direct_fcn(Chaser, Target, Nav, t_now, tf_rel_guess, solin, node_cases(ii));
+        end
 end
-
-r = sol.y(1,:);
-theta = sol.y(2,:);
-rdot = sol.y(3,:);
-thetadot = sol.y(4,:);
-tf = sol.parameters(1);
 
 figure();
 subplot(2,1,1);
-plot(cos(theta).*r, sin(theta).*r);
-xlabel('x');
-ylabel('y');
-title('Position State Space');
+
+yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
+[T,X] = ode113(@(t,X)(indirect_odes(t, X, tf_rel_guess, Chaser)), [0,1], [yinit; lambda_segtrue]); % indirect_odes(tau, X, tf_rel, Chaser)
+
+solindirect.y(1,:) = X(:,1)';
+solindirect.y(2,:) = X(:,2)';
+solindirect.y(3,:) = X(:,3)';
+solindirect.y(4,:) = X(:,4)';
+solindirect.x = T;
+
+plot(solindirect.y(1,:).*cos(solindirect.y(2,:)), solindirect.y(1,:).*sin(solindirect.y(2,:)), 'k-', 'linewidth', 3);
+hold on
+for ii = 1:length(node_cases)
+    r = sol{ii}.y(1,:);
+    theta = sol{ii}.y(2,:);
+    rdot = sol{ii}.y(3,:);
+    thetadot = sol{ii}.y(4,:);
+    plot(cos(theta).*r, sin(theta).*r, 'linewidth', 2);
+end
+
+xlabel('$x$','interpreter','latex');
+ylabel('$y$','interpreter','latex');
+title('Position State Space','interpreter','latex');
+set(gca,'FontSize',16);
+grid on
 
 subplot(2,1,2);
-plot(((1:length(sol.control)) - 1)/(length(sol.control)-1)*tf, sol.control);
-hold on
-plot(true_time, alphatrue + 2*pi, 'r-');
+leg = {};
+for ii = 1:length(node_cases)
+    stairs(((1:length(sol{ii}.control)) - 1)/(length(sol{ii}.control)-1)*tf{ii}, sol{ii}.control, 'linewidth', 2);
+    leg = [leg, [num2str(node_cases(ii)), ' Nodes']];
+    hold on
+end
+plot(true_time, alphatrue + 2*pi, 'k-', 'linewidth', 3);
+legend([leg,'Indirect']);
+set(gca,'FontSize',16);
 ylabel('$\alpha$','interpreter','latex');
-xlabel('Time');
-title('Control History');
+xlabel('Time','interpreter','latex');
+title('Control History','interpreter','latex');
+grid on

@@ -105,8 +105,8 @@ x_midpoint = (x(2:end) + x(1:end-1))/2;
 
 midpoint_predicted = 1/2*(p0+p1) + x(end)/(N-1)*(dp0-dp1)/8;
 midpoint_derivative_predicted = -3/2*(N-1)*(p0-p1)/x(end) - 1/4*(dp0+dp1);
-% midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, control(:,1:end-1), params, options.consts);
-midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, interp1(x, control, x_midpoint, 'pchip'), params, options.consts);
+midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, control(:,1:end-1), params, options.consts);
+% midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, interp1(x, control, x_midpoint, 'pchip'), params, options.consts);
 collo_constraint = midpoint_derivative_predicted - midpoint_derivative_actual;
 ceq = [ceq; collo_constraint(:)];
 
