@@ -68,6 +68,11 @@ if norm(FVAL) > 1e-8
         @(X) indirect_fsolver(X, Chaser, Target, Nav, t0, yinit(1:4), Opt_sol),...
         ICsolver0, options);
     fprintf('\nfsolve |F| = %e\n',norm(FVAL));
+    fprintf('Computed non-optimal control for t = %f to %f\n', ...
+    t_now, t_seg);
+else
+    fprintf('Computed optimal control for t = %f to %f\n', ...
+    t_now, t_seg);
 end
 
 

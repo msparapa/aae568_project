@@ -7,7 +7,7 @@ colors = lines(5);
 plot_opt.i = 0;             % last plot figure number
 plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
-plot_opt.nav = false;        % whether or not to plot navigation results
+plot_opt.nav = true;        % whether or not to plot navigation results
 
 % Options for simulation
 
@@ -180,9 +180,6 @@ while(~gameover && count < sim_opt.maxCount)
             end
             [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser,...
                 Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
-            
-            fprintf('Computed optimal control for t = %f to %f\n', ...
-                t_now, t_seg);
     end
     
     
