@@ -1,5 +1,5 @@
 clear all; close all; clc;
-global alpha g0 Isp T mu m 
+global alpha g0 Isp T mu m R Q
 alpha = 0;                 % thrust angle
 g0    = 9.82;              % gravitational acceleration, m/s^2
 Isp   = 1000;              % specific-impulse, s
@@ -56,7 +56,7 @@ C = [ 1.4516e-03  -5.0018e-09  -1.4306e-05  -4.0265e-10;
      -4.0265e-10  -7.3595e-14   4.3113e-12   1.9591e-16];
 
 % Scale the Covariance up 
-sf = 1000;
+sf = 10;
 sfMatrix = [
         sf   0     0     0;
          0   sf    0     0;
@@ -65,11 +65,11 @@ sfMatrix = [
 % C = sfMatrix*C*transpose(sfMatrix);
 
 % Arbitrary sigmas 
-rSig    = 1e-12;
-tSig    = 1e-12;
-rDotSig = 1e-12;
-tDotSig = 1e-12;
-C = [rSig 0 0 0;0 tSig 0 0;0 0 rDotSig 0;0 0 0 tDotSig];
+% rSig    = 1e-12;
+% tSig    = 1e-12;
+% rDotSig = 1e-12;
+% tDotSig = 1e-12;
+% C = [rSig 0 0 0;0 tSig 0 0;0 0 rDotSig 0;0 0 0 tDotSig];
 
 % Draw a random sample from the scaled covariance and set this to your
 % initial seed
@@ -95,7 +95,7 @@ ekfCovars = zeros(4,4,n);
 ekfMeans(1,:) = Xplus;
 ekfCovars(:,:,1) = Pplus;
 for k = 2:n
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R);
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R);
     ekfMeans(k,:)    = Xplus;
     ekfCovars(:,:,k) = Pplus;
 end
@@ -138,7 +138,7 @@ for k = 1:N
     estUkfMeans(k,:)          = ukfMean;
     estUkfCovars(:,:,k)       = ukfCovar;
     storeObs(k,:)             = devMeas;    
-    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,Q,R);
+    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,R);
     estEkfMeans(k,:)          = Xplus;
     estEkfCovars(:,:,k)       = Pplus;
 end
@@ -225,7 +225,7 @@ n = length(utMeansNew);
 ekfMeansNew  = zeros(n,4);
 ekfCovarsNew = zeros(4,4,n); 
 for k = 1:n
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,Q,R);
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R);
     ekfMeansNew(k,:)    = Xplus;
     ekfCovarsNew(:,:,k) = Pplus;
 end
