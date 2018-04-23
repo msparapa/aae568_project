@@ -424,18 +424,22 @@ for ii = 1:length(Nav.t_history)
     end
 end
 subplot(221);
-semilogy(Nav_rsig);
+semilogy(Nav_rsig*charL*1e3);
 title('r: 1\sigma');
+ylabel('m')
 grid on;
 subplot(222);
 semilogy(Nav_thetasig);
 title('\theta: 1\sigma');
+ylabel('rad');
 grid on;
 subplot(223);
-semilogy(Nav_rdotsig);
+semilogy(Nav_rdotsig*charL/charT*1e3);
 title('rdot: 1\sigma');
+ylabel('m/s');
 grid on;
 subplot(224);
-semilogy(Nav_thetadotsig);
+semilogy(Nav_thetadotsig/charT);
 title('\thetadot: 1\sigma');
+ylabel('rad/s');
 grid on;
