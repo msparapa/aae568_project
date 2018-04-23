@@ -67,7 +67,7 @@ for mc_i = 1:1
     Nav.theta = 0;
     Nav.rdot = 0;
     Nav.thetadot = 1;
-    Nav.P = 1e-3*eye(4);                    % Initial Covariance to test EKF
+    Nav.P = 1e-2*eye(4);                    % Initial Covariance to test EKF
     Nav.X_history = {};
     Nav.t_history = {};
 
@@ -91,11 +91,11 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-    Cov.R = zeros(4);       % No noise in EOMs
-%     Cov.R = [0, 0, 0, 0;...
-%              0, 0, 0, 0;...
-%              0, 0, (1e-8*charT^2/charL)^2, 0;...
-%              0, 0, 0, (1e-8*charT^2/charL)^2];
+%     Cov.R = zeros(4);       % No noise in EOMs
+    Cov.R = [0, 0, 0, 0;...
+             0, 0, 0, 0;...
+             0, 0, (1e-8*charT^2/charL)^2, 0;...
+             0, 0, 0, (1e-8*charT^2/charL)^2];
     
 
     switch(sim_opt.estim)
@@ -424,25 +424,25 @@ for ii = 1:length(Nav.t_history)
 end
 subplot(221);
 semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
-title('r: 1\sigma');
+title('$r: 1-{\sigma}$','interpreter','latex');
 ylabel('m')
 grid on;
-legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 subplot(222);
 semilogy(Nav_t*charT,Nav_thetasig,'g');
-title('\theta: 1\sigma');
+title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
 ylabel('rad');
-legend('Actual Error','P 1-\sigma')
+legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(223);
 semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'g');
-title('rdot: 1\sigma');
+title('$\dot{r}$: 1-${\sigma}$','interpreter','latex');
 ylabel('m/s');
-legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(224);
 semilogy(Nav_t*charT,Nav_thetadotsig/charT,'g');
-title('\thetadot: 1\sigma');
+title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
 ylabel('rad/s');
-legend('Actual Error','P 1-\sigma')
+legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
