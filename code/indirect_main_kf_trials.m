@@ -399,14 +399,14 @@ ref_noise = [1, 0, 1, 0];
 noise_log = [range_err*charL*1e3, 0, rr_err*charL/charT*1e3, 0];
 for jj = 1:4
     subplot(2,2,jj);
-    semilogy(thist*charT,abs(Delta_hist(:,jj))*scale_factor(jj));
+    semilogy(thist*charT,abs(Delta_hist(:,jj))*scale_factor(jj),'b');
     grid on;
     title(title_strs{jj});
     ylabel(ylabel_strs{jj});
     xlabel('s');
     hold on;
     if ref_noise(jj)
-        semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)]);
+        semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)],'--r');
     end
 end
 
@@ -423,22 +423,26 @@ for ii = 1:length(Nav.t_history)
     end
 end
 subplot(221);
-semilogy(Nav_t*charT,Nav_rsig*charL*1e3);
+semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
 title('r: 1\sigma');
 ylabel('m')
 grid on;
+legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
 subplot(222);
-semilogy(Nav_t*charT,Nav_thetasig);
+semilogy(Nav_t*charT,Nav_thetasig,'g');
 title('\theta: 1\sigma');
 ylabel('rad');
+legend('Actual Error','P 1-\sigma')
 grid on;
 subplot(223);
-semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3);
+semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'g');
 title('rdot: 1\sigma');
 ylabel('m/s');
+legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
 grid on;
 subplot(224);
-semilogy(Nav_t*charT,Nav_thetadotsig/charT);
+semilogy(Nav_t*charT,Nav_thetadotsig/charT,'g');
 title('\thetadot: 1\sigma');
 ylabel('rad/s');
+legend('Actual Error','P 1-\sigma')
 grid on;

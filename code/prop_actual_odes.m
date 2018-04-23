@@ -46,7 +46,7 @@ dX_dt(2) = thetadot;
 dX_dt(3) = r*thetadot^2 - 1/r^2 + T/m*cos_gamma;
 dX_dt(4) = -2*rdot*thetadot/r + T/m/r*sin_gamma;
 
-dX_dt = dX_dt + Cov.R*w_i;
+dX_dt = dX_dt + sqrt(Cov.R)*w_i;
 
 
 
