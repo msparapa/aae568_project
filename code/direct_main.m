@@ -142,6 +142,6 @@ title('Position State Space');
 
 subplot(2,1,2);
 stairs(((1:length(sol.control)) - 1)/(length(sol.control)-1)*tf, sol.control);
-ylabel('$\gamma$','interpreter','latex');
+ylabel('$\alpha$','interpreter','latex');
 xlabel('Time');
 title('Control History');
