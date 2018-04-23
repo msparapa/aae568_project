@@ -1,5 +1,5 @@
 clear all; close all; clc;
-global alpha g0 Isp T mu m R Q
+global alpha g0 Isp T mu m Q R
 alpha = 0;                 % thrust angle
 g0    = 9.82;              % gravitational acceleration, m/s^2
 Isp   = 1000;              % specific-impulse, s
@@ -95,7 +95,7 @@ ekfCovars = zeros(4,4,n);
 ekfMeans(1,:) = Xplus;
 ekfCovars(:,:,1) = Pplus;
 for k = 2:n
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R);
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R,Q);
     ekfMeans(k,:)    = Xplus;
     ekfCovars(:,:,k) = Pplus;
 end
@@ -138,7 +138,7 @@ for k = 1:N
     estUkfMeans(k,:)          = ukfMean;
     estUkfCovars(:,:,k)       = ukfCovar;
     storeObs(k,:)             = devMeas;    
-    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,R);
+    [Xplus, Pplus]            = ekf(h,Xplus,Pplus,devMeas,R,Q);
     estEkfMeans(k,:)          = Xplus;
     estEkfCovars(:,:,k)       = Pplus;
 end
@@ -225,7 +225,7 @@ n = length(utMeansNew);
 ekfMeansNew  = zeros(n,4);
 ekfCovarsNew = zeros(4,4,n); 
 for k = 1:n
-    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R);
+    [Xplus, Pplus]   = ekf(h,Xplus,Pplus,y,R,Q);
     ekfMeansNew(k,:)    = Xplus;
     ekfCovarsNew(:,:,k) = Pplus;
 end

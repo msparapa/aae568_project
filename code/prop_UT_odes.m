@@ -1,5 +1,5 @@
 function dfdt = prop_UT_odes(~,f)
-global alpha mu m T R Q
+global alpha mu m T Q
 r         = f( 1);
 theta     = f( 2);
 rDot      = f( 3);
@@ -24,7 +24,8 @@ if(length(f) == 4 + 4*4)
         0, 0, 1, 0;...
         0, 0, 0, 1];
     
-    Pminus = A*Pplus*A'+Q + C*R*C';
+%     Pminus = A*P + P*A' + C*eye(4)*C';
+    Pminus = A*Pplus*A'+Q;
 
     dfdt(5:20) = reshape(Pminus, 16, 1);
 end
