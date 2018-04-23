@@ -404,14 +404,12 @@ for jj = 1:4
     title(title_strs{jj});
     ylabel(ylabel_strs{jj});
     xlabel('s');
+    hold on;
     if ref_noise(jj)
-        hold on;
         semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)]);
-        hold off;
     end
 end
 
-figure();
 index_P = 1;
 for ii = 1:length(Nav.t_history)
     for kk = 1:length(Nav.t_history{ii})
@@ -420,26 +418,27 @@ for ii = 1:length(Nav.t_history)
         Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2));
         Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3));
         Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4));
+        Nav_t(index_P) = Nav.t_history{ii}(kk);
         index_P = index_P + 1;        
     end
 end
 subplot(221);
-semilogy(Nav_rsig*charL*1e3);
+semilogy(Nav_t*charT,Nav_rsig*charL*1e3);
 title('r: 1\sigma');
 ylabel('m')
 grid on;
 subplot(222);
-semilogy(Nav_thetasig);
+semilogy(Nav_t*charT,Nav_thetasig);
 title('\theta: 1\sigma');
 ylabel('rad');
 grid on;
 subplot(223);
-semilogy(Nav_rdotsig*charL/charT*1e3);
+semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3);
 title('rdot: 1\sigma');
 ylabel('m/s');
 grid on;
 subplot(224);
-semilogy(Nav_thetadotsig/charT);
+semilogy(Nav_t*charT,Nav_thetadotsig/charT);
 title('\thetadot: 1\sigma');
 ylabel('rad/s');
 grid on;
