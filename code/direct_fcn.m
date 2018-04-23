@@ -4,7 +4,7 @@ function [alpha, alpha_t, tf, sol] = direct_fcn(Chaser,...
 yinit = [Nav.r; Nav.theta; Nav.rdot; Nav.thetadot];
 ICsolver0 = [tf_rel_guess];
 
-options = optimset('Algorithm','sqp','display','off', 'TolCon', 1e-12);
+options = optimset('Algorithm','sqp','display','off', 'TolCon', 1e-16);
 
 options.Nodes = N;
 

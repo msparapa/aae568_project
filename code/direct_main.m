@@ -120,7 +120,7 @@ count = 0;
 %   section of it that corresponds to our flight time between
 %   observations
 
-node_cases = [20,40,60,80];
+node_cases = [20,40,60,80,160];
 
 switch(lower(sim_opt.optim))
     case 'direct'
