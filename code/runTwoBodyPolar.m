@@ -177,17 +177,17 @@ rDotResidEkf = storeObs(:,2) - estEkfMeans(:,3);
 
 figure(); 
 subplot(2,1,1); plot(numMeas,rResidUkf,'bx'); grid on;
-ylabel('$r$, m','Interpreter','latex')
+ylabel('$r$, km','Interpreter','latex')
 subplot(2,1,2); plot(numMeas,rDotResidUkf,'bx'); grid on;
-ylabel('$\dot{r}$, m/s','Interpreter','latex')
+ylabel('$\dot{r}$, km/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Ukf Observation Post-Fit Residuals','Interpreter','latex')
 
 figure(); 
 subplot(2,1,1); plot(numMeas,rResidEkf,'bx'); grid on;
-ylabel('$r$, m','Interpreter','latex')
+ylabel('$r$, km','Interpreter','latex')
 subplot(2,1,2); plot(numMeas,rDotResidEkf,'bx'); grid on;
-ylabel('$\dot{r}$, m/s','Interpreter','latex')
+ylabel('$\dot{r}$, km/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Ekf Observation Post-Fit Residuals','Interpreter','latex')
 
@@ -210,10 +210,10 @@ end
 figure(); 
 subplot(2,1,1); semilogy(numMeas,storeUkfMSE(:,1),'k-'); grid on; hold on
 subplot(2,1,1); semilogy(numMeas,storeEkfMSE(:,1),'b-'); grid on; hold on
-ylabel('$r$, m','Interpreter','latex')
+ylabel('$r$, km','Interpreter','latex')
 subplot(2,1,2); semilogy(numMeas,storeUkfMSE(:,2),'k-'); grid on; hold on
 subplot(2,1,2); semilogy(numMeas,storeEkfMSE(:,2),'b-'); grid on;
-ylabel('$\dot{r}$, m/s','Interpreter','latex')
+ylabel('$\dot{r}$, km/s','Interpreter','latex')
 xlabel('Number of Measurements','Interpreter','latex')
 subplot(2,1,1); title('Mean Squared Error','Interpreter','latex')
 legend('UT/UKF','EKF')
@@ -264,18 +264,18 @@ t3 = linspace(dt,revs*P*2+dt,(revs*P*2+dt)/dt);
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],storeUtCov(:,1)/1e3,'b-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],storeUtCovNew(:,1)/1e3,'b-'); hold on;
-ylabel('$r$, m','Interpreter','latex')
+plot([0 t/3600],storeUtCov(:,1),'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],storeUtCovNew(:,1),'b-'); hold on;
+ylabel('$r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(storeUtCov(:,2)*180/pi,360),'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],mod(storeUtCovNew(:,2)*180/pi,360),'b-'); hold on;
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t/3600],storeUtCov(:,3)/1e3,'b-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],storeUtCovNew(:,3)/1e3,'b-'); hold on;
-ylabel('$\dot{r}$, m/sec','Interpreter','latex')
+plot([0 t/3600],storeUtCov(:,3),'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],storeUtCovNew(:,3),'b-'); hold on;
+ylabel('$\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],storeUtCov(:,4)*180/pi,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],storeUtCovNew(:,4)*180/pi,'b-'); hold on;
@@ -288,10 +288,10 @@ set(gca,'gridlinestyle','--')
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],utMeans(:,1)/1e3,'g-'); grid on; hold on;
-plot(timeline*60/3600,utMeansNew(:,1)/1e3,'b-'); hold on;
-plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
-ylabel('$r$, m','Interpreter','latex')
+plot([0 t/3600],utMeans(:,1),'g-'); grid on; hold on;
+plot(timeline*60/3600,utMeansNew(:,1),'b-'); hold on;
+plot([0 t3/3600],fTot(:,1), 'r--');
+ylabel('$r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(utMeans(:,2)*180/pi,360),'g-'); grid on; hold on;
@@ -299,10 +299,10 @@ plot(timeline*60/3600,mod(utMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t/3600],utMeans(:,3)/1e3,'g-'); grid on; hold on;
-plot(timeline*60/3600,utMeansNew(:,3)/1e3,'b-'); hold on;
-plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
-ylabel('$\dot{r}$, m/sec','Interpreter','latex')
+plot([0 t/3600],utMeans(:,3),'g-'); grid on; hold on;
+plot(timeline*60/3600,utMeansNew(:,3),'b-'); hold on;
+plot([0 t3/3600],fTot(:,3), 'r--');
+ylabel('$\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],utMeans(:,4)*180/pi,'g-'); grid on; hold on;
 plot(timeline*60/3600,utMeansNew(:,4)*180/pi,'b-'); hold on;
@@ -320,15 +320,15 @@ Diff = utMeansNew - fTot;
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot(timeline*60/3600,Diff(:,1)*1e3, 'r-'); grid on
-ylabel('$\Delta r$, m','Interpreter','latex')
+plot(timeline*60/3600,Diff(:,1), 'r-'); grid on
+ylabel('$\Delta r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot(timeline*60/3600,Diff(:,2)*180/pi, 'r-'); grid on
 ylabel('$\Delta\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot(timeline*60/3600,Diff(:,3)*1e3, 'r-'); grid on
-ylabel('$\Delta\dot{r}$, m/sec','Interpreter','latex')
+plot(timeline*60/3600,Diff(:,3), 'r-'); grid on
+ylabel('$\Delta\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot(timeline*60/3600,Diff(:,4)*180/pi, 'r-'); grid on
 ylabel('$\Delta\dot{\theta}$, deg/sec','Interpreter','latex')
@@ -340,18 +340,18 @@ set(gca,'gridlinestyle','--')
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],storeEkfCov(:,1)/1e3,'b-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],storeEkfCovNew(:,1)/1e3,'b-'); hold on;
-ylabel('$r$, m','Interpreter','latex')
+plot([0 t/3600],storeEkfCov(:,1),'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],storeEkfCovNew(:,1),'b-'); hold on;
+ylabel('$r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(storeEkfCov(:,2)*180/pi,360),'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],mod(storeEkfCovNew(:,2)*180/pi,360),'b-'); hold on;
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t/3600],storeEkfCov(:,3)/1e3,'b-'); grid on; hold on;
-plot([revs*P/3600 t2/3600],storeEkfCovNew(:,3)/1e3,'b-'); hold on;
-ylabel('$\dot{r}$, m/sec','Interpreter','latex')
+plot([0 t/3600],storeEkfCov(:,3),'b-'); grid on; hold on;
+plot([revs*P/3600 t2/3600],storeEkfCovNew(:,3),'b-'); hold on;
+ylabel('$\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],storeEkfCov(:,4)*180/pi,'b-'); grid on; hold on;
 plot([revs*P/3600 t2/3600],storeEkfCovNew(:,4)*180/pi,'b-'); hold on;
@@ -364,10 +364,10 @@ set(gca,'gridlinestyle','--')
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot([0 t/3600],ekfMeans(:,1)/1e3,'g-'); grid on; hold on;
-plot(timeline*60/3600,ekfMeansNew(:,1)/1e3,'b-'); hold on;
-plot([0 t3/3600],fTot(:,1)/1e3, 'r--');
-ylabel('$r$, m','Interpreter','latex')
+plot([0 t/3600],ekfMeans(:,1),'g-'); grid on; hold on;
+plot(timeline*60/3600,ekfMeansNew(:,1),'b-'); hold on;
+plot([0 t3/3600],fTot(:,1), 'r--');
+ylabel('$r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot([0 t/3600],mod(ekfMeans(:,2)*180/pi,360),'g-'); grid on; hold on;
@@ -375,10 +375,10 @@ plot(timeline*60/3600,mod(ekfMeansNew(:,2)*180/pi,360),'b-'); hold on;
 plot([0 t3/3600],mod(fTot(:,2)*180/pi,360), 'r--');
 ylabel('$\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot([0 t/3600],ekfMeans(:,3)/1e3,'g-'); grid on; hold on;
-plot(timeline*60/3600,ekfMeansNew(:,3)/1e3,'b-'); hold on;
-plot([0 t3/3600],fTot(:,3)/1e3, 'r--');
-ylabel('$\dot{r}$, m/sec','Interpreter','latex')
+plot([0 t/3600],ekfMeans(:,3),'g-'); grid on; hold on;
+plot(timeline*60/3600,ekfMeansNew(:,3),'b-'); hold on;
+plot([0 t3/3600],fTot(:,3), 'r--');
+ylabel('$\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot([0 t/3600],ekfMeans(:,4)*180/pi,'g-'); grid on; hold on;
 plot(timeline*60/3600,ekfMeansNew(:,4)*180/pi,'b-'); hold on;
@@ -396,15 +396,15 @@ Diff = ekfMeansNew - fTot;
 figure();
 subplot(4,1,1)
 set(0,'DefaultAxesFontName', 'Arial'); 
-plot(timeline*60/3600,Diff(:,1)*1e3, 'r-'); grid on
-ylabel('$\Delta r$, m','Interpreter','latex')
+plot(timeline*60/3600,Diff(:,1), 'r-'); grid on
+ylabel('$\Delta r$, km','Interpreter','latex')
 subplot(4,1,2)
 set(0,'DefaultAxesFontName', 'Arial'); 
 plot(timeline*60/3600,Diff(:,2)*180/pi, 'r-'); grid on
 ylabel('$\Delta\theta$, deg','Interpreter','latex')
 subplot(4,1,3)
-plot(timeline*60/3600,Diff(:,3)*1e3, 'r-'); grid on
-ylabel('$\Delta\dot{r}$, m/sec','Interpreter','latex')
+plot(timeline*60/3600,Diff(:,3), 'r-'); grid on
+ylabel('$\Delta\dot{r}$, km/sec','Interpreter','latex')
 subplot(4,1,4)
 plot(timeline*60/3600,Diff(:,4)*180/pi, 'r-'); grid on
 ylabel('$\Delta\dot{\theta}$, deg/sec','Interpreter','latex')
