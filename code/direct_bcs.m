@@ -5,7 +5,7 @@ Nav = consts.Nav;
 Target = consts.Target;
 
 tf_rel = params(1);
-slack = params(2);
+% slack = params(2);
 
 % dYf_dtf = direct_odes(0,Yf,tf_rel,Chaser)/tf_rel;
 
@@ -18,5 +18,5 @@ PSI = [X0(1) - Nav.r;
     Xf(3) - Target.rdot0;
     Xf(4) - Target.thetadot0];
 %     Yf(6)*Target.thetadot0 - Yf(5:8)'*dYf_dtf(1:4) - 1;
-    tf_rel - slack^2];
+%     tf_rel - slack^2];
 return

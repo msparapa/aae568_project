@@ -1,9 +1,14 @@
-% Collin York
-% Initialize Indirect Optimization
+% Mike Sparapany
+% Initialize Direct Optimization
 clear all; clc; close all;
 addpath('optim');
 
 % Options for simulation
+% Plotting Options
+plot_opt.i = 0;             % last plot figure number
+plot_opt.indirect = false;   % whether or not to plot indirect optimization results
+plot_opt.actual = false;     % whether or not to plot comparison of Nav, Actual, and Target
+plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Which optimization method to use
 %
@@ -124,7 +129,13 @@ switch(lower(sim_opt.optim))
                 tf_rel_guess = 1.1*Chaser.ts_opt;
             end
         end
-        [alpha, alpha_t, tf, sol] = direct_fcn(Chaser, Target, Nav, t_now, 0, tf_rel_guess);
+        [alphatrue, alpha_ttrue, tftrue, t_segtrue, lambda_segtrue, plot_opt] = indirect_fcn(Chaser,...
+                Target, Nav, t_now, plot_opt, lambda0_guess, tf_rel_guess);
+        tf_rel_guess = tftrue;
+        true_time = linspace(0,1,length(alphatrue))*tftrue;
+        solin.control = alphatrue;
+        solin.lambda = lambda_segtrue;
+        [alpha, alpha_t, tf, sol] = direct_fcn(Chaser, Target, Nav, t_now, tf_rel_guess, solin);
 end
 
 r = sol.y(1,:);
@@ -141,7 +152,9 @@ ylabel('y');
 title('Position State Space');
 
 subplot(2,1,2);
-stairs(((1:length(sol.control)) - 1)/(length(sol.control)-1)*tf, sol.control);
+plot(((1:length(sol.control)) - 1)/(length(sol.control)-1)*tf, sol.control);
+hold on
+plot(true_time, alphatrue + 2*pi, 'r-');
 ylabel('$\alpha$','interpreter','latex');
 xlabel('Time');
 title('Control History');
