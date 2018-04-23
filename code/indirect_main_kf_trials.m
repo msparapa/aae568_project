@@ -91,11 +91,11 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-%     Cov.R = zeros(4);       % No noise in EOMs
-    Cov.R = [0, 0, 0, 0;...
-             0, 0, 0, 0;...
-             0, 0, (1e-8*charT^2/charL)^2, 0;...
-             0, 0, 0, (1e-8*charT^2/charL)^2];
+    Cov.R = zeros(4);       % No noise in EOMs
+%     Cov.R = [0, 0, 0, 0;...
+%              0, 0, 0, 0;...
+%              0, 0, (1e-8*charT^2/charL)^2, 0;...
+%              0, 0, 0, (1e-8*charT^2/charL)^2];
     
 
     switch(sim_opt.estim)
@@ -385,7 +385,7 @@ Act_xhist = [];
 thist = [];
 Nav_Phist = [];
 for ii = 1:length(Nav.X_history)
-    Nav_xhist = [Nav_xhist; interp1(Nav.t_history{ii}, Nav.X_history{ii}(:,1:4), Actual.t_history{ii})];
+    Nav_xhist = [Nav_xhist; interp1(Nav.t_history{ii}, Nav.X_history{ii}(:,1:4), Actual.t_history{ii}, 'spline')];
     Act_xhist = [Act_xhist; Actual.X_history{ii}(:,1:4)];
     thist = [thist; Actual.t_history{ii}];
 end
