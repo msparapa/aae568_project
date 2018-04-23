@@ -238,7 +238,7 @@ end
 % the UT returns the state AT the last measurement)
 utMeansNew   = [utMeans;estUkfMeans;utMeansNew(2:end,:)];
 ekfMeansNew  = [ekfMeans;estEkfMeans;ekfMeansNew(1:end-1,:)];
-timeline     = linspace(1,714,714);
+timeline     = linspace(1,length(fTot),length(fTot));
 
 utCovarsNew = utCovarsNew(:,:,2:end);
 ekfCovarsNew = ekfCovarsNew(:,:,1:end-1);
