@@ -67,12 +67,13 @@ for mc_i = 1:1
     Nav.theta = 0;
     Nav.rdot = 0;
     Nav.thetadot = 1;
-    Nav.P = 1e-3*eye(4);                    % Initial Covariance to test EKF
+    Nav.P = 1e-4*eye(4);                    % Initial Covariance to test EKF
     Nav.X_history = {};
     Nav.t_history = {};
 
     % Actual Initial State for Optimizer at t0
-    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
+    %Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
+    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
     Actual.X_history = {};      % Each cell holds the state history for one segment
     Actual.t_history = {};      % Each cell holds the time associated with the state history
     Actual.alpha_history = {};
@@ -91,11 +92,11 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-    Cov.R = zeros(4);       % No noise in EOMs
-%     Cov.R = [0, 0, 0, 0;...
-%              0, 0, 0, 0;...
-%              0, 0, (1e-8*charT^2/charL)^2, 0;...
-%              0, 0, 0, (1e-8*charT^2/charL)^2];
+%     Cov.R = zeros(4);       % No noise in EOMs
+    Cov.R = [0, 0, 0, 0;...
+             0, 0, 0, 0;...
+             0, 0, (1e-8*charT^2/charL)^2, 0;...
+             0, 0, 0, (1e-8*charT^2/charL)^2];
     
 
     switch(sim_opt.estim)
@@ -413,6 +414,7 @@ end
 index_P = 1;
 for ii = 1:length(Nav.t_history)
     for kk = 1:length(Nav.t_history{ii})
+        Nav_X(:,index_P) = Nav.X_history{ii}(kk,1:4)';
         Nav_P{index_P} = reshape(Nav.X_history{ii}(kk,5:20),4,4);
         Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1));
         Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2));
@@ -446,3 +448,13 @@ title('\thetadot: 1\sigma');
 ylabel('rad/s');
 legend('Actual Error','P 1-\sigma')
 grid on;
+
+figure();
+subplot(221);
+plot(Nav_t,Nav_X(1,:)-Target.r0*ones(1,length(Nav_t)));
+subplot(222);
+plot(Nav_t,Nav_X(2,:)-(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t))));
+subplot(223);
+plot(Nav_t,Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t)));
+subplot(224);
+plot(Nav_t,Nav_X(4,:)-Target.thetadot0*ones(1,length(Nav_t)));
