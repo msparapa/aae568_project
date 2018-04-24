@@ -21,7 +21,7 @@ sim_opt.optim = 'indirect';
 %
 %   - ekf   Extended Kalman Filter
 %   - ut    Unscented Transform + Unscented Kalman Filter
-sim_opt.estim = 'ekf';
+sim_opt.estim = 'ut';
 
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
@@ -52,8 +52,8 @@ for mc_i = 1:1
     % Compute thetadot for a circular orbit; rad/s
     thetadot0 = sqrt(muEarth/r0^3);
 
-    range_err = (10/1000)/charL;            % 10 m -> nondim
-    rr_err = (1/1000/1000)*charT/charL;     % 1 mm/s -> nondim
+    range_err = 5/charL;            % 10 m -> nondim
+    rr_err = 5e-3*charT/charL;     % 1 mm/s -> nondim
 
     % Chaser Nondimensional Parameters
     % These will be fed in by main code
@@ -70,10 +70,11 @@ for mc_i = 1:1
     Nav.P = 1e-4*eye(4);                    % Initial Covariance to test EKF
     Nav.X_history = {};
     Nav.t_history = {};
-
+    Nav.P_history = {}; 
+    
     % Actual Initial State for Optimizer at t0
-    %Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
-    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
+    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
+%     Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
     Actual.X_history = {};      % Each cell holds the state history for one segment
     Actual.t_history = {};      % Each cell holds the time associated with the state history
     Actual.alpha_history = {};
@@ -105,8 +106,8 @@ for mc_i = 1:1
             Cov.Z = [range_err^2, 0; 0, rr_err^2];  % Measurement noise (y = Hx + Gz)
         case 'ut'
             % Some arbitrary covariance matrix
-            P0 = rand(4);
-            P0 = P0*P0.' * 1e-5;        % Use small values to avoid larger errors that crash the Chaser into Earth
+            P0 = Nav.P;
+%             P0 = P0*P0.' * 1e-5;        % Use small values to avoid larger errors that crash the Chaser into Earth
             Cov.P0 = P0;
             Cov.alpha = 1;
             Cov.beta = 2.0;
@@ -226,6 +227,7 @@ for mc_i = 1:1
 
                 Nav.X_history{end+1} = intMeans;
                 Nav.t_history{end+1} = [t_now:Cov.dt:t_seg, t_seg];
+                Nav.P_history{end+1} = intCovars;
 
     %             if(count == 28)
     %                 keyboard;
@@ -415,13 +417,22 @@ index_P = 1;
 for ii = 1:length(Nav.t_history)
     for kk = 1:length(Nav.t_history{ii})
         Nav_X(:,index_P) = Nav.X_history{ii}(kk,1:4)';
-        Nav_P{index_P} = reshape(Nav.X_history{ii}(kk,5:20),4,4);
-        Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1));
-        Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2));
-        Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3));
-        Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4));
-        Nav_t(index_P) = Nav.t_history{ii}(kk);
-        index_P = index_P + 1;        
+        if strcmp(sim_opt.estim,'ekf') == 1 
+            Nav_P{index_P} = reshape(Nav.X_history{ii}(kk,5:20),4,4);     % Taking covariance out at each integration time step
+            Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1));                % calculating sigmas for each covariance
+            Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2)); 
+            Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3)); 
+            Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4)); 
+            Nav_t(index_P) = Nav.t_history{ii}(kk); 
+        else 
+            Nav_P{index_P} = Nav.P_history{ii}(:,:,kk); 
+            Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1)); 
+            Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2)); 
+            Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3)); 
+            Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4)); 
+            Nav_t(index_P) = Nav.t_history{ii}(kk); 
+        end 
+        index_P = index_P + 1;      
     end
 end
 Nav_X(:,index_P) = X_chaser;
