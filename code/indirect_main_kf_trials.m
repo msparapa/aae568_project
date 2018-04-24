@@ -5,8 +5,8 @@ colors = lines(5);
 
 % Plotting Options
 plot_opt.i = 0;             % last plot figure number
-plot_opt.indirect = false;   % whether or not to plot indirect optimization results
-plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
+plot_opt.indirect = true;   % whether or not to plot indirect optimization results
+plot_opt.actual = false;     % whether or not to plot comparison of Nav, Actual, and Target
 plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Options for simulation
