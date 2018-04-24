@@ -5,7 +5,7 @@ colors = lines(5);
 
 % Plotting Options
 plot_opt.i = 0;             % last plot figure number
-plot_opt.indirect = true;   % whether or not to plot indirect optimization results
+plot_opt.indirect = false;   % whether or not to plot indirect optimization results
 plot_opt.actual = false;     % whether or not to plot comparison of Nav, Actual, and Target
 plot_opt.nav = false;        % whether or not to plot navigation results
 
@@ -91,12 +91,12 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-    %Cov.R = zeros(4);       % No noise in EOMs
+%    Cov.R = zeros(4);       % No noise in EOMs
     Cov.R = [0, 0, 0, 0;...
              0, 0, 0, 0;...
              0, 0, (1e-8*charT^2/charL)^2, 0;...
              0, 0, 0, (1e-8*charT^2/charL)^2];
-    
+%     
 
     switch(sim_opt.estim)
         case 'ekf'
@@ -370,3 +370,81 @@ for mc_i = 1:1
     tf_delta(mc_i) = t_seg - tf_initial; % Actual final time - Original Opt Final Time
     fprintf('Time of Flight was %f above original optimal estimate\n', tf_delta(mc_i));
 end
+
+Nav_xhist = [];
+Act_xhist = [];
+thist = [];
+Nav_Phist = [];
+for ii = 1:length(Nav.X_history)
+    Nav_xhist = [Nav_xhist; interp1(Nav.t_history{ii}, Nav.X_history{ii}(:,1:4), Actual.t_history{ii}, 'spline')];
+    Act_xhist = [Act_xhist; Actual.X_history{ii}(:,1:4)];
+    thist = [thist; Actual.t_history{ii}];
+end
+Delta_hist = Nav_xhist - Act_xhist;
+
+figure();
+title_strs = {'r','\theta','r\dot','theta\dot'};
+ylabel_strs = {'m','rad','m/s','rad/s'};
+scale_factor = [charL*1e3, 1, charL/charT*1e3, 1/charT];
+ref_noise = [1, 0, 1, 0];
+noise_log = [range_err*charL*1e3, 0, rr_err*charL/charT*1e3, 0];
+for jj = 1:4
+    subplot(2,2,jj);
+    semilogy(thist*charT,abs(Delta_hist(:,jj))*scale_factor(jj),'b');
+    grid on;
+    title(title_strs{jj});
+    ylabel(ylabel_strs{jj});
+    xlabel('s');
+    hold on;
+    if ref_noise(jj)
+        semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)],'--r');
+    end
+end
+
+index_P = 1;
+for ii = 1:length(Nav.t_history)
+    for kk = 1:length(Nav.t_history{ii})
+        Nav_X(:,index_P) = Nav.X_history{ii}(kk,1:4)';
+        Nav_P{index_P} = reshape(Nav.X_history{ii}(kk,5:20),4,4);
+        Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1));
+        Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2));
+        Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3));
+        Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4));
+        Nav_t(index_P) = Nav.t_history{ii}(kk);
+        index_P = index_P + 1;        
+    end
+end
+subplot(221);
+semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
+title('r: 1\sigma');
+ylabel('m')
+grid on;
+legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+subplot(222);
+semilogy(Nav_t*charT,Nav_thetasig,'g');
+title('\theta: 1\sigma');
+ylabel('rad');
+legend('Actual Error','P 1-\sigma')
+grid on;
+subplot(223);
+semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'g');
+title('rdot: 1\sigma');
+ylabel('m/s');
+legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+grid on;
+subplot(224);
+semilogy(Nav_t*charT,Nav_thetadotsig/charT,'g');
+title('\thetadot: 1\sigma');
+ylabel('rad/s');
+legend('Actual Error','P 1-\sigma')
+grid on;
+
+figure();
+subplot(221);
+plot(Nav_t,Nav_X(1,:)-Target.r0*ones(1,length(Nav_t)));
+subplot(222);
+plot(Nav_t,Nav_X(2,:)-(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t))));
+subplot(223);
+plot(Nav_t,Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t)));
+subplot(224);
+plot(Nav_t,Nav_X(4,:)-Target.thetadot0*ones(1,length(Nav_t)));

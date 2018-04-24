@@ -2,9 +2,15 @@ function [sol] = bvpmc(odefun, quadsfun, bcfun, solinit, options)
 % Same inputs as bvp4c, but quadsfun = [] for complex (non-reducible)
 % systems
 
-sol = solinit;
+sol.consts = solinit.consts;
+sol.parameters = solinit.parameters;
 
-nOdes = length(sol.y(:,1));
+nOdes = length(solinit.y(:,1));
+T = linspace(0,1,options.Nodes);
+
+for ii = 1:nOdes
+    sol.y(ii,:) = interp1(solinit.x, solinit.y(ii,:), T);
+end
 
 if isempty(quadsfun)
     nQuads = 0;
@@ -21,8 +27,12 @@ options.nParams = nParams;
 options.odefun = odefun;
 options.bcfun = bcfun;
 if options.isdirect
-    options.nControls = length(sol.control(:,1));
+    options.nControls = length(solinit.control(:,1));
+    for ii = 1:options.nControls
+        sol.control(ii,:) = interp1(solinit.x, solinit.control(ii,:), T);
+    end
 end
+
 options.consts = sol.consts;
 N = options.Nodes;
 
@@ -95,14 +105,18 @@ x_midpoint = (x(2:end) + x(1:end-1))/2;
 
 midpoint_predicted = 1/2*(p0+p1) + x(end)/(N-1)*(dp0-dp1)/8;
 midpoint_derivative_predicted = -3/2*(N-1)*(p0-p1)/x(end) - 1/4*(dp0+dp1);
-% midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, control(:,1:end-1), params, options.consts);
-midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, interp1(x, control, x_midpoint), params, options.consts);
+midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, control(:,1:end-1), params, options.consts);
+% midpoint_derivative_actual = options.odefun(x_midpoint, midpoint_predicted, interp1(x, control, x_midpoint, 'pchip'), params, options.consts);
 collo_constraint = midpoint_derivative_predicted - midpoint_derivative_actual;
 ceq = [ceq; collo_constraint(:)];
 
 bcs = options.bcfun(x(1), y(:,1), control(:,1), x(end), y(:,end), control(:,end), 0, 0, params, options.consts);
 
 ceq = [ceq;bcs];
+
+tmax = 2*pi;
+tmin = -2*pi;
+c = [c; (control < tmax)'; (control > tmin)'];
 
 end
 
