@@ -21,7 +21,7 @@ sim_opt.optim = 'indirect';
 %
 %   - ekf   Extended Kalman Filter
 %   - ut    Unscented Transform + Unscented Kalman Filter
-sim_opt.estim = 'ekf';
+sim_opt.estim = 'ut';
 
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
@@ -217,9 +217,12 @@ for mc_i = 1:1
                 Nav.X_history{end+1} = intMeans;
                 Nav.t_history{end+1} = [t_now:Cov.dt:t_seg, t_seg];
 
-    %             if(count == 28)
-    %                 keyboard;
-    %             end
+                Nav.r = intMeans(end,1);
+                Nav.theta = intMeans(end,2);
+                Nav.rdot = intMeans(end,3);
+                Nav.thetadot = intMeans(end,4);
+                Nav.P = intCovars(:,:,end);
+                
                 % Store propagated Sigmas
                 storeCov = zeros(size(intCovars,3),4);
                 for i = 1:size(intCovars,3)
@@ -342,7 +345,7 @@ for mc_i = 1:1
         % TODO -  Need to add check on covariance size??
 
 
-    %     keyboard;
+%         keyboard;
 
         if(~gameover)
             % Update Chaser state
