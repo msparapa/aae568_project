@@ -120,7 +120,7 @@ count = 0;
 %   section of it that corresponds to our flight time between
 %   observations
 
-node_cases = [20,40,60,80,160];
+node_cases = [20,40,80,160];
 
 switch(lower(sim_opt.optim))
     case 'direct'
@@ -169,8 +169,8 @@ for ii = 1:length(node_cases)
     plot(cos(theta).*r, sin(theta).*r, 'linewidth', 2);
 end
 
-xlabel('$x$','interpreter','latex');
-ylabel('$y$','interpreter','latex');
+xlabel('$x$ [nd]','interpreter','latex');
+ylabel('$y$ [nd]','interpreter','latex');
 title('Position State Space','interpreter','latex');
 set(gca,'FontSize',16);
 grid on
@@ -178,15 +178,16 @@ axis equal
 
 subplot(2,1,2);
 leg = {};
+plot(true_time, 180/pi*(alphatrue + 2*pi), 'k-', 'linewidth', 3);
+hold on
 for ii = 1:length(node_cases)
-    stairs(((1:length(sol{ii}.control)) - 1)/(length(sol{ii}.control)-1)*tf{ii}, sol{ii}.control, 'linewidth', 2);
+    stairs(((1:length(sol{ii}.control)) - 1)/(length(sol{ii}.control)-1)*tf{ii}, 180/pi*(sol{ii}.control), 'linewidth', 2);
     leg = [leg, [num2str(node_cases(ii)), ' Nodes']];
-    hold on
 end
-plot(true_time, alphatrue + 2*pi, 'k-', 'linewidth', 3);
-legend([leg,'Indirect']);
+
+legend(['Indirect',leg]);
 set(gca,'FontSize',16);
-ylabel('$\alpha$','interpreter','latex');
-xlabel('Time','interpreter','latex');
+ylabel('$\alpha$ [degrees]','interpreter','latex');
+xlabel('Time [nd]','interpreter','latex');
 title('Control History','interpreter','latex');
 grid on
