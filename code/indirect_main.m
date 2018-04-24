@@ -5,8 +5,8 @@ colors = lines(5);
 
 % Plotting Options
 plot_opt.i = 0;             % last plot figure number
-plot_opt.indirect = false;   % whether or not to plot indirect optimization results
-plot_opt.actual = true;     % whether or not to plot comparison of Nav, Actual, and Target
+plot_opt.indirect = true;   % whether or not to plot indirect optimization results
+plot_opt.actual = false;     % whether or not to plot comparison of Nav, Actual, and Target
 plot_opt.nav = false;        % whether or not to plot navigation results
 
 % Options for simulation
@@ -29,7 +29,7 @@ sim_opt.stateTol = 1e-6;
 sim_opt.maxCount = 50;
 
 %% MonteCarlo Runs
-for mc_i = 1:32
+for mc_i = 1:1
 
 
     %% Define Dimensional Initial Conditions
@@ -91,7 +91,12 @@ for mc_i = 1:32
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-    Cov.R = zeros(4);       % No noise in EOMs
+    %Cov.R = zeros(4);       % No noise in EOMs
+    Cov.R = [0, 0, 0, 0;...
+             0, 0, 0, 0;...
+             0, 0, (1e-8*charT^2/charL)^2, 0;...
+             0, 0, 0, (1e-8*charT^2/charL)^2];
+    
 
     switch(sim_opt.estim)
         case 'ekf'
@@ -323,7 +328,16 @@ for mc_i = 1:32
             [bInPos, bInVel] = checkErrEllipses(Nav, Actual, Target, t_seg, plot_opt);
             gameover = bInPos && bInVel;
         else
-            gameover = norm(X_targ - X_chaser) < sim_opt.stateTol ;
+            rad_pos_err_dim = norm(X_targ(1) - X_chaser(1)) * charL;
+            rad_vel_err_dim = norm(X_targ(3) - X_chaser(3)) * charL/charT;
+            dwntrk_pos_err_dim = norm(X_targ(2)*X_targ(1) - X_chaser(2)*X_chaser(1)) * charL;
+            dwntrk_vel_err_dim = norm(X_targ(4)*X_targ(1) - X_chaser(4)*X_chaser(1)) * charL/charT;
+            
+            gameover = rad_pos_err_dim < 0.04;
+            gameover = gameover && (rad_vel_err_dim < 0.0001);
+            gameover = gameover && (dwntrk_pos_err_dim < 0.04);
+            gameover = gameover && (dwntrk_vel_err_dim < 0.0001);
+            %gameover = norm(X_targ - X_chaser) < sim_opt.stateTol ;
         end
         % TODO -  Need to add check on covariance size??
 
