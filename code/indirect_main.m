@@ -397,7 +397,7 @@ for jj = 1:4
     grid on;
     title(title_strs{jj});
     ylabel(ylabel_strs{jj});
-    xlabel('s');
+    xlabel('time [s]');
     hold on;
     if ref_noise(jj)
         semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)],'--r');
@@ -425,54 +425,81 @@ Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3));
 Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4));
 Nav_t(index_P) = Nav.t_history{end}(end);
 
+index_Act = 1;
+for ii = 1:length(Actual.t_history)
+    for kk = 1:length(Actual.t_history{ii})
+        Act_X(:,index_Act) = Actual.X_history{ii}(kk,1:4)';
+        Act_t(index_Act) = Actual.t_history{ii}(kk);
+        index_Act = index_Act + 1;
+    end
+end
 
 subplot(221);
-semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
-title('r: 1-${\sigma}$','interpreter','latex');
-ylabel('m')
+semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'color',colors(2,:));
+title('r Estimation Error: 30-min Sample Rate','interpreter','latex');
+ylabel('Error [m]')
 grid on;
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 subplot(222);
-semilogy(Nav_t*charT,Nav_thetasig,'g');
-title('{\theta}$: 1-${\sigma}$','interpreter','latex');
-ylabel('rad');
+semilogy(Nav_t*charT,Nav_thetasig,'color',colors(2,:));
+title('${\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
+ylabel('Error [rad]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(223);
-semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'g');
-title('$\dot{r}$: 1-${\sigma}$','interpreter','latex');
-ylabel('m/s');
+semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'color',colors(2,:));
+title('$\dot{r}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
+ylabel('Error [m/s]');
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(224);
-semilogy(Nav_t*charT,Nav_thetadotsig/charT,'g');
-title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
-ylabel('rad/s');
+semilogy(Nav_t*charT,Nav_thetadotsig/charT,'color',colors(2,:));
+title('$\dot{\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
+ylabel('Error [rad/s]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 
 figure();
 subplot(221);
-semilogy(Nav_t,1e3*charL*abs(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
-grid on;
+semilogy(Nav_t,1e3*charL*abs(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))),'r');
+title('Radial Position Delta From Target');
+xlabel('s');
+ylabel('m');
 hold on;
+semilogy(Act_t,1e3*charL*abs(Act_X(1,:)-Target.r0*ones(1,length(Act_t))),'--b');
+grid on;
 semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
+
 subplot(222);
-semilogy(Nav_t,1e3*charL*abs(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
-grid on;
+semilogy(Nav_t,1e3*charL*abs(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))),'r');
+title('Downtrack Position Delta From Target');
+xlabel('s');
+ylabel('m');
 hold on;
+semilogy(Act_t,1e3*charL*abs(Act_X(2,:).*Act_X(1,:)-Target.r0*(Target.thetadot0*Act_t + Target.theta0*ones(1,length(Act_t)))),'--b');
+grid on;
 semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
+
 subplot(223);
-semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
-grid on;
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))),'r');
+title('Radial Velocity Delta From Target');
+xlabel('s');
+ylabel('m/s');
 hold on;
+semilogy(Act_t,1e3*charL/charT*abs(Act_X(3,:)-Target.rdot0*ones(1,length(Act_t))),'--b');
+grid on;
 semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
+
 subplot(224);
-semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
-grid on;
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))),'r');
 hold on;
+title('Downtrack Velocity Delta From Target');
+xlabel('s');
+ylabel('m/s');
+semilogy(Act_t,1e3*charL/charT*abs(Act_X(4,:).*Act_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Act_t))),'--b');
+grid on;
 semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
