@@ -424,7 +424,7 @@ for ii = 1:length(Nav.t_history)
 end
 subplot(221);
 semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
-title('$r: 1-{\sigma}$','interpreter','latex');
+title('r: 1-${\sigma}$','interpreter','latex');
 ylabel('m')
 grid on;
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
