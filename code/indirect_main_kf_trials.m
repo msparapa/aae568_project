@@ -21,7 +21,7 @@ sim_opt.optim = 'indirect';
 %
 %   - ekf   Extended Kalman Filter
 %   - ut    Unscented Transform + Unscented Kalman Filter
-sim_opt.estim = 'ut';
+sim_opt.estim = 'ekf';
 
 % Tolerance to check if state has reached final value
 sim_opt.stateTol = 1e-6;
@@ -52,8 +52,8 @@ for mc_i = 1:1
     % Compute thetadot for a circular orbit; rad/s
     thetadot0 = sqrt(muEarth/r0^3);
 
-    range_err = 5/charL;            % 10 m -> nondim
-    rr_err = 5e-3*charT/charL;     % 1 mm/s -> nondim
+    range_err = 10/1000/charL;            % 10 m -> nondim
+    rr_err = 1/1000/1000/charL*charT;     % 1 mm/s -> nondim
 
     % Chaser Nondimensional Parameters
     % These will be fed in by main code
@@ -73,8 +73,8 @@ for mc_i = 1:1
     Nav.P_history = {}; 
     
     % Actual Initial State for Optimizer at t0
-    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
-%     Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
+    %Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
+    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
     Actual.X_history = {};      % Each cell holds the state history for one segment
     Actual.t_history = {};      % Each cell holds the time associated with the state history
     Actual.alpha_history = {};
