@@ -450,22 +450,26 @@ grid on;
 
 figure();
 subplot(221);
-semilogy(Nav_t,1e3*charL*norm(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL*abs(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
+grid on;
 hold on;
 semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
 subplot(222);
-semilogy(Nav_t,1e3*charL*norm(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
+semilogy(Nav_t,1e3*charL*abs(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
+grid on;
 hold on;
 semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
 subplot(223);
-semilogy(Nav_t,1e3*charL/charT*norm(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
+grid on;
 hold on;
 semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
 subplot(224);
-semilogy(Nav_t,1e3*charL/charT*norm(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
+grid on;
 hold on;
 semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
