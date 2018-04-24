@@ -26,7 +26,7 @@ function [alpha, alpha_t, tf, t_seg, lambda_seg, plot_opt] = indirect_fcn(Chaser
 %   Outputs: [alpha, alpha_t, tf, lambda_f]
 %
 %       - alpha: Control history for the entire optimal trajectory
-%       - alpha_t: times associated with alpha
+%       - alpha_t: times associated with alpha, relative to mission start
 %       - tf: total time on the optimal trajectory
 %       - t_seg: time at the end of "the segment"
 %       - lambda_seg: costate values at the end of "the segment", i.e., 

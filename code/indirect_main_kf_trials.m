@@ -229,9 +229,12 @@ for mc_i = 1:1
                 Nav.t_history{end+1} = [t_now:Cov.dt:t_seg, t_seg];
                 Nav.P_history{end+1} = intCovars;
 
-    %             if(count == 28)
-    %                 keyboard;
-    %             end
+                Nav.r = intMeans(end,1);
+                Nav.theta = intMeans(end,2);
+                Nav.rdot = intMeans(end,3);
+                Nav.thetadot = intMeans(end,4);
+                Nav.P = intCovars(:,:,end);
+                
                 % Store propagated Sigmas
                 storeCov = zeros(size(intCovars,3),4);
                 for i = 1:size(intCovars,3)
