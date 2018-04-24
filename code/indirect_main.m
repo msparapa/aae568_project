@@ -91,11 +91,11 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-%    Cov.R = zeros(4);       % No noise in EOMs
-    Cov.R = [0, 0, 0, 0;...
-             0, 0, 0, 0;...
-             0, 0, (1e-8*charT^2/charL)^2, 0;...
-             0, 0, 0, (1e-8*charT^2/charL)^2];
+   Cov.R = zeros(4);       % No noise in EOMs
+%     Cov.R = [0, 0, 0, 0;...
+%              0, 0, 0, 0;...
+%              0, 0, (1e-8*charT^2/charL)^2, 0;...
+%              0, 0, 0, (1e-8*charT^2/charL)^2];
 %     
 
     switch(sim_opt.estim)
@@ -334,9 +334,9 @@ for mc_i = 1:1
             dwntrk_vel_err_dim = norm(X_targ(4)*X_targ(1) - X_chaser(4)*X_chaser(1)) * charL/charT;
             
             gameover = rad_pos_err_dim < 0.04;
-            gameover = gameover && (rad_vel_err_dim < 0.0001);
+            gameover = gameover && (rad_vel_err_dim < 0.001);
             gameover = gameover && (dwntrk_pos_err_dim < 0.04);
-            gameover = gameover && (dwntrk_vel_err_dim < 0.0001);
+            gameover = gameover && (dwntrk_vel_err_dim < 0.001);
             %gameover = norm(X_targ - X_chaser) < sim_opt.stateTol ;
         end
         % TODO -  Need to add check on covariance size??
@@ -441,10 +441,26 @@ grid on;
 
 figure();
 subplot(221);
-plot(Nav_t,Nav_X(1,:)-Target.r0*ones(1,length(Nav_t)));
+plot(Nav_t,1e3*charL*(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
+hold on;
+plot([0, Nav_t(end)],[40, 40],'--k')
+plot([0, Nav_t(end)],[-40, -40],'--k')
+hold off;
 subplot(222);
-plot(Nav_t,Nav_X(2,:)-(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t))));
+plot(Nav_t,1e3*charL*(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
+hold on;
+plot([0, Nav_t(end)],[40, 40],'--k')
+plot([0, Nav_t(end)],[-40, -40],'--k')
+hold off;
 subplot(223);
-plot(Nav_t,Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t)));
+plot(Nav_t,1e3*charL/charT*(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
+hold on;
+plot([0, Nav_t(end)],[1, 1],'--k')
+plot([0, Nav_t(end)],[-1, -1],'--k')
+hold off;
 subplot(224);
-plot(Nav_t,Nav_X(4,:)-Target.thetadot0*ones(1,length(Nav_t)));
+plot(Nav_t,1e3*charL/charT*(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
+hold on;
+plot([0, Nav_t(end)],[1, 1],'--k')
+plot([0, Nav_t(end)],[-1, -1],'--k')
+hold off;
