@@ -60,7 +60,7 @@ for mc_i = 1:1
     Chaser.T = T/charM/charL*charT^2;        % Non-dim thrust
     Chaser.mdot = T/(Isp*g0)/charM*charT;    % Non-dim mdot
     Chaser.m0 = M0/charM;                    % Non-dim mass; starts at 1; not state variable
-    Chaser.ts_opt =  2*7200/charT;%1800/charT;               % Non-dim time-of-flight for one "leg" between observations 
+    Chaser.ts_opt =  1800/charT;%1800/charT;               % Non-dim time-of-flight for one "leg" between observations 
 
     % Filtered Nav Initial State for Optimizer at t0
     Nav.r = 1;
@@ -74,7 +74,7 @@ for mc_i = 1:1
     
     % Actual Initial State for Optimizer at t0
     %Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*[0.967880128697577; 0.853744857241021; -0.265860871076575; -0.063459359489832];    %Current state [r, theta, rdot, thetadot]
-    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*randn(4,1);    %Current state [r, theta, rdot, thetadot]
+    Actual.X = [1; 0; 0; 1] + sqrt(Nav.P)*ones(4,1);    %Current state [r, theta, rdot, thetadot]
     Actual.X_history = {};      % Each cell holds the state history for one segment
     Actual.t_history = {};      % Each cell holds the time associated with the state history
     Actual.alpha_history = {};
@@ -93,11 +93,11 @@ for mc_i = 1:1
     %   gravity w/ magnitude 1e-8 km/s^2
     % A = [zeros(2,4); zeros(2,2), eye(2)];
     % Cov.R = A*1e-7*(charT^2/charL);   % Acceleration Process Noise (xdot = f(x,u,t) + C*w)
-    Cov.R = zeros(4);       % No noise in EOMs
-%     Cov.R = [0, 0, 0, 0;...
-%              0, 0, 0, 0;...
-%              0, 0, (1e-8*charT^2/charL)^2, 0;...
-%              0, 0, 0, (1e-8*charT^2/charL)^2];
+%     Cov.R = zeros(4);       % No noise in EOMs
+    Cov.R = [0, 0, 0, 0;...
+             0, 0, 0, 0;...
+             0, 0, (1e-8*charT^2/charL)^2, 0;...
+             0, 0, 0, (1e-8*charT^2/charL)^2];
     
 
     switch(sim_opt.estim)
@@ -445,25 +445,25 @@ Nav_t(index_P) = Nav.t_history{end}(end);
 
 subplot(221);
 semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'color',colors(2,:));
-title('r Estimation Error: 4-hr Sample Rate','interpreter','latex');
+title('r Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [m]')
 grid on;
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 subplot(222);
 semilogy(Nav_t*charT,Nav_thetasig,'color',colors(2,:));
-title('${\theta}$ Estimation Error: 4-hr Sample Rate','interpreter','latex');
+title('${\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [rad]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(223);
 semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'color',colors(2,:));
-title('$\dot{r}$ Estimation Error: 4-hr Sample Rate','interpreter','latex');
+title('$\dot{r}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [m/s]');
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(224);
 semilogy(Nav_t*charT,Nav_thetadotsig/charT,'color',colors(2,:));
-title('$\dot{\theta}$ Estimation Error: 4-hr Sample Rate','interpreter','latex');
+title('$\dot{\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [rad/s]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
