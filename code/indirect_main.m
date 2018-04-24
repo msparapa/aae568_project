@@ -67,7 +67,7 @@ for mc_i = 1:1
     Nav.theta = 0;
     Nav.rdot = 0;
     Nav.thetadot = 1;
-    Nav.P = 1e-5*eye(4);                    % Initial Covariance to test EKF
+    Nav.P = 1e-4*eye(4);                    % Initial Covariance to test EKF
     Nav.X_history = {};
     Nav.t_history = {};
 
@@ -431,7 +431,7 @@ grid on;
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 subplot(222);
 semilogy(Nav_t*charT,Nav_thetasig,'g');
-title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
+title('{\theta}$: 1-${\sigma}$','interpreter','latex');
 ylabel('rad');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
