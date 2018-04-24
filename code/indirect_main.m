@@ -333,9 +333,9 @@ for mc_i = 1:1
             dwntrk_pos_err_dim = norm(X_targ(2)*X_targ(1) - X_chaser(2)*X_chaser(1)) * charL;
             dwntrk_vel_err_dim = norm(X_targ(4)*X_targ(1) - X_chaser(4)*X_chaser(1)) * charL/charT;
             
-            gameover = rad_pos_err_dim < 0.04;
+            gameover = rad_pos_err_dim < 0.1;
             gameover = gameover && (rad_vel_err_dim < 0.001);
-            gameover = gameover && (dwntrk_pos_err_dim < 0.04);
+            gameover = gameover && (dwntrk_pos_err_dim < 0.1);
             gameover = gameover && (dwntrk_vel_err_dim < 0.001);
             %gameover = norm(X_targ - X_chaser) < sim_opt.stateTol ;
         end
@@ -414,6 +414,15 @@ for ii = 1:length(Nav.t_history)
         index_P = index_P + 1;        
     end
 end
+Nav_X(:,index_P) = X_chaser;
+Nav_P{index_P} = Nav.P;
+Nav_rsig(index_P) = sqrt(Nav_P{index_P}(1,1));
+Nav_thetasig(index_P) = sqrt(Nav_P{index_P}(2,2));
+Nav_rdotsig(index_P) = sqrt(Nav_P{index_P}(3,3));
+Nav_thetadotsig(index_P) = sqrt(Nav_P{index_P}(4,4));
+Nav_t(index_P) = Nav.t_history{end}(end);
+
+
 subplot(221);
 semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
 title('r: 1\sigma');
@@ -441,26 +450,22 @@ grid on;
 
 figure();
 subplot(221);
-plot(Nav_t,1e3*charL*(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL*norm(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))));
 hold on;
-plot([0, Nav_t(end)],[40, 40],'--k')
-plot([0, Nav_t(end)],[-40, -40],'--k')
+semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
 subplot(222);
-plot(Nav_t,1e3*charL*(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
+semilogy(Nav_t,1e3*charL*norm(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))));
 hold on;
-plot([0, Nav_t(end)],[40, 40],'--k')
-plot([0, Nav_t(end)],[-40, -40],'--k')
+semilogy([0, Nav_t(end)],[100, 100],'--k')
 hold off;
 subplot(223);
-plot(Nav_t,1e3*charL/charT*(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL/charT*norm(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))));
 hold on;
-plot([0, Nav_t(end)],[1, 1],'--k')
-plot([0, Nav_t(end)],[-1, -1],'--k')
+semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
 subplot(224);
-plot(Nav_t,1e3*charL/charT*(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
+semilogy(Nav_t,1e3*charL/charT*norm(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))));
 hold on;
-plot([0, Nav_t(end)],[1, 1],'--k')
-plot([0, Nav_t(end)],[-1, -1],'--k')
+semilogy([0, Nav_t(end)],[1, 1],'--k')
 hold off;
