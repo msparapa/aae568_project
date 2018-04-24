@@ -425,27 +425,27 @@ Nav_t(index_P) = Nav.t_history{end}(end);
 
 subplot(221);
 semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'g');
-title('r: 1\sigma');
+title('r: 1-${\sigma}$','interpreter','latex');
 ylabel('m')
 grid on;
-legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 subplot(222);
 semilogy(Nav_t*charT,Nav_thetasig,'g');
-title('\theta: 1\sigma');
+title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
 ylabel('rad');
-legend('Actual Error','P 1-\sigma')
+legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(223);
 semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'g');
-title('rdot: 1\sigma');
+title('$\dot{r}$: 1-${\sigma}$','interpreter','latex');
 ylabel('m/s');
-legend('Actual Error','z noise 1-\sigma','P 1-\sigma')
+legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 subplot(224);
 semilogy(Nav_t*charT,Nav_thetadotsig/charT,'g');
-title('\thetadot: 1\sigma');
+title('$\dot{\theta}$: 1-${\sigma}$','interpreter','latex');
 ylabel('rad/s');
-legend('Actual Error','P 1-\sigma')
+legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
 
 figure();
