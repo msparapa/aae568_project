@@ -385,7 +385,8 @@ for ii = 1:length(Nav.X_history)
 end
 Delta_hist = Nav_xhist - Act_xhist;
 
-figure();
+%%
+figure('color', 'w');
 title_strs = {'r','\theta','r\dot','theta\dot'};
 ylabel_strs = {'m','rad','m/s','rad/s'};
 scale_factor = [charL*1e3, 1, charL/charT*1e3, 1/charT];
@@ -393,14 +394,14 @@ ref_noise = [1, 0, 1, 0];
 noise_log = [range_err*charL*1e3, 0, rr_err*charL/charT*1e3, 0];
 for jj = 1:4
     subplot(2,2,jj);
-    semilogy(thist*charT,abs(Delta_hist(:,jj))*scale_factor(jj),'b');
+    semilogy(thist*charT,abs(Delta_hist(:,jj))*scale_factor(jj),'b', 'linewidth', 2);
     grid on;
     title(title_strs{jj});
     ylabel(ylabel_strs{jj});
     xlabel('time [s]');
     hold on;
     if ref_noise(jj)
-        semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)],'--r');
+        semilogy([0, thist(end)*charT],[noise_log(jj), noise_log(jj)],'--r', 'linewidth', 2);
     end
 end
 
@@ -435,71 +436,85 @@ for ii = 1:length(Actual.t_history)
 end
 
 subplot(221);
-semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'color',colors(2,:));
+semilogy(Nav_t*charT,Nav_rsig*charL*1e3,'color',colors(2,:), 'linewidth', 2);
 title('r Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [m]')
 grid on;
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
+
 subplot(222);
-semilogy(Nav_t*charT,Nav_thetasig,'color',colors(2,:));
+semilogy(Nav_t*charT,Nav_thetasig,'color',colors(2,:), 'linewidth', 2);
 title('${\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [rad]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
+
 subplot(223);
-semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'color',colors(2,:));
+semilogy(Nav_t*charT,Nav_rdotsig*charL/charT*1e3,'color',colors(2,:), 'linewidth', 2);
 title('$\dot{r}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [m/s]');
 legend({'Actual Error','z noise 1-${\sigma}$','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
+
 subplot(224);
-semilogy(Nav_t*charT,Nav_thetadotsig/charT,'color',colors(2,:));
+semilogy(Nav_t*charT,Nav_thetadotsig/charT,'color',colors(2,:), 'linewidth', 2);
 title('$\dot{\theta}$ Estimation Error: 30-min Sample Rate','interpreter','latex');
 ylabel('Error [rad/s]');
 legend({'Actual Error','P 1-${\sigma}$'},'interpreter','latex')
 grid on;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
 
+%%
 figure();
 subplot(221);
-semilogy(Nav_t,1e3*charL*abs(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))),'r');
+semilogy(Nav_t,1e3*charL*abs(Nav_X(1,:)-Target.r0*ones(1,length(Nav_t))),'color', colors(2,:), 'linewidth', 2);
 title('Radial Position Delta From Target');
 xlabel('s');
 ylabel('m');
 hold on;
-semilogy(Act_t,1e3*charL*abs(Act_X(1,:)-Target.r0*ones(1,length(Act_t))),'--b');
+semilogy(Act_t,1e3*charL*abs(Act_X(1,:)-Target.r0*ones(1,length(Act_t))),'--', 'color', colors(1,:), 'linewidth', 2);
 grid on;
-semilogy([0, Nav_t(end)],[100, 100],'--k')
+semilogy([0, Nav_t(end)],[100, 100],'--k', 'linewidth', 2)
 hold off;
+legend('Nav', 'Actual', 'Tol');
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
 
 subplot(222);
-semilogy(Nav_t,1e3*charL*abs(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))),'r');
+semilogy(Nav_t,1e3*charL*abs(Nav_X(2,:).*Nav_X(1,:)-Target.r0*(Target.thetadot0*Nav_t + Target.theta0*ones(1,length(Nav_t)))),'color', colors(2,:), 'linewidth', 2);
 title('Downtrack Position Delta From Target');
 xlabel('s');
 ylabel('m');
 hold on;
-semilogy(Act_t,1e3*charL*abs(Act_X(2,:).*Act_X(1,:)-Target.r0*(Target.thetadot0*Act_t + Target.theta0*ones(1,length(Act_t)))),'--b');
+semilogy(Act_t,1e3*charL*abs(Act_X(2,:).*Act_X(1,:)-Target.r0*(Target.thetadot0*Act_t + Target.theta0*ones(1,length(Act_t)))),'--', 'color', colors(1,:), 'linewidth', 2);
 grid on;
-semilogy([0, Nav_t(end)],[100, 100],'--k')
+semilogy([0, Nav_t(end)],[100, 100],'--k', 'linewidth', 2)
 hold off;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
 
 subplot(223);
-semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))),'r');
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(3,:)-Target.rdot0*ones(1,length(Nav_t))),'color', colors(2,:), 'linewidth', 2);
 title('Radial Velocity Delta From Target');
 xlabel('s');
 ylabel('m/s');
 hold on;
-semilogy(Act_t,1e3*charL/charT*abs(Act_X(3,:)-Target.rdot0*ones(1,length(Act_t))),'--b');
+semilogy(Act_t,1e3*charL/charT*abs(Act_X(3,:)-Target.rdot0*ones(1,length(Act_t))),'--', 'color', colors(1,:), 'linewidth', 2);
 grid on;
-semilogy([0, Nav_t(end)],[1, 1],'--k')
+semilogy([0, Nav_t(end)],[1, 1],'--k', 'linewidth', 2)
 hold off;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
 
 subplot(224);
-semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))),'r');
+semilogy(Nav_t,1e3*charL/charT*abs(Nav_X(4,:).*Nav_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Nav_t))),'color', colors(2,:), 'linewidth', 2);
 hold on;
 title('Downtrack Velocity Delta From Target');
 xlabel('s');
 ylabel('m/s');
-semilogy(Act_t,1e3*charL/charT*abs(Act_X(4,:).*Act_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Act_t))),'--b');
+semilogy(Act_t,1e3*charL/charT*abs(Act_X(4,:).*Act_X(1,:)-Target.r0*Target.thetadot0*ones(1,length(Act_t))),'--', 'color', colors(1,:), 'linewidth', 2);
 grid on;
-semilogy([0, Nav_t(end)],[1, 1],'--k')
+semilogy([0, Nav_t(end)],[1, 1],'--k', 'linewidth', 2)
 hold off;
+set(gca, 'fontsize', 11, 'fontweight', 'bold');
+set(gcf, 'color', 'w');
