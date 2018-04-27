@@ -33,7 +33,7 @@ solinit0.control(1,:) = 0*linspace(1, 1, options.Nodes);
 % solinit0.y(4,:) = X(:,4)';
 
 solinit0.y(1,:) = linspace(Nav.r, Target.r0, options.Nodes);
-solinit0.y(2,:) = linspace(Nav.theta, Target.thetadot0*(tf_rel_guess+t0) - Target.theta0, options.Nodes);
+solinit0.y(2,:) = linspace(Nav.theta, Target.thetadot0*(tf_rel_guess+t0) + Target.theta0, options.Nodes);
 solinit0.y(3,:) = linspace(Nav.rdot, Target.rdot0, options.Nodes);
 solinit0.y(4,:) = linspace(Nav.thetadot, Target.thetadot0, options.Nodes);
 options.cost = @direct_cost;
